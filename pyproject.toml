@@ -1,0 +1,59 @@
+[build-system]
+requires = ["hatchling>=1.8.0", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "infidelity_operator"
+description="Infidelity operator for NetKet."
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+    "netket~=3.6",
+]
+version = "0.0.1"
+
+[tool.hatch.build]
+include = ["infidelity_operator*"]
+
+# Development tools
+
+[tool.black]
+line-length = 88
+target-version = ['py37', 'py38', 'py39', 'py310']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.coverage.run]
+branch = true
+parallel = true
+concurrency = ["multiprocessing"]
+command_line = "-m pytest --verbose test"
+source = ["tensorV"]
+
+[tool.pytest.ini_options]
+addopts = "--color=yes --verbose --durations=100 -n auto --tb=short"
+doctest_optionflags = "NORMALIZE_WHITESPACE IGNORE_EXCEPTION_DETAIL NUMBER"
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore:No GPU/TPU found, falling back to CPU.:UserWarning",
+    "ignore:the imp module is deprecated in favour of importlib.*:DeprecationWarning",
+    "ignore:`np.long`",
+    "ignore:`np.int` is a deprecated alias for the builtin `int`",
+    "ignore::DeprecationWarning:tensorboardX",
+]
+testpaths = [
+    "test",
+]
