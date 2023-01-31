@@ -3,7 +3,7 @@ requires = ["hatchling>=1.8.0", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
-name = "infidelity_operator"
+name = "netket_fidelity"
 description="Infidelity operator for NetKet."
 readme = "README.md"
 requires-python = ">=3.7"
@@ -13,7 +13,7 @@ dependencies = [
 version = "0.0.1"
 
 [tool.hatch.build]
-include = ["infidelity_operator*"]
+include = ["netket_fidelity*"]
 
 # Development tools
 
