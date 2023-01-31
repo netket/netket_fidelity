@@ -1,19 +1,14 @@
-from typing import Optional, Callable, Tuple
 from functools import partial
 import jax.numpy as jnp
 import numpy as np
 import jax
 from jax.tree_util import register_pytree_node_class
 import netket as nk
-from netket.operator import AbstractOperator, DiscreteOperator
-from netket.utils.types import DType, PyTree
-from netket.utils.dispatch import TrueT
-from netket.jax._vjp import vjp as nkvjp
-from netket.stats import statistics as mpi_statistics, Stats
+from netket.operator import DiscreteOperator
 
 
 @register_pytree_node_class
-class Rx(DiscreteOperator):
+class Rx(DiscreteOperator):    
     def __init__(self, hi, idx, angle):
         super().__init__(hi)
         self.idx = idx

@@ -1,18 +1,13 @@
-from typing import Optional, Callable, Tuple
+from typing import Callable, Tuple
 from functools import partial
 import jax.numpy as jnp
-import numpy as np
 import jax
-from jax.tree_util import register_pytree_node_class
-import netket as nk
-from netket.operator import AbstractOperator, DiscreteOperator
-from netket.utils.types import DType, PyTree
-from netket.utils.dispatch import TrueT
+from netket.utils.types import PyTree
 from netket.jax._vjp import vjp as nkvjp
 from netket.stats import statistics as mpi_statistics, Stats
 
 
-def expect_fid(
+def expect_2distr(
     log_pdf_new: Callable[[PyTree, jnp.ndarray], jnp.ndarray],
     log_pdf_old: Callable[[PyTree, jnp.ndarray], jnp.ndarray],
     expected_fun: Callable[[PyTree, jnp.ndarray], jnp.ndarray],
@@ -31,7 +26,7 @@ def expect_fid(
         expected_ffun
     """
 
-    return _expect_fid(
+    return _expect_2distr(
         n_chains,
         log_pdf_new,
         log_pdf_old,
@@ -45,7 +40,7 @@ def expect_fid(
 
 
 @partial(jax.custom_vjp, nondiff_argnums=(0, 1, 2, 3))
-def _expect_fid(
+def _expect_2distr(
     n_chains,
     log_pdf_new,
     log_pdf_old,
@@ -113,4 +108,4 @@ def _expect_bwd_fid(n_chains, log_pdf_new, log_pdf_old, expected_fun, residuals,
     return grad_f
 
 
-_expect_fid.defvjp(_expect_fwd_fid, _expect_bwd_fid)
+_expect_2distr.defvjp(_expect_fwd_fid, _expect_bwd_fid)

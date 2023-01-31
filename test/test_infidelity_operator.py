@@ -1,95 +1,94 @@
 import pytest
+from pytest import approx
 import netket as nk
 import jax.numpy as jnp
 import numpy as np
+import scipy 
 
-from infidelity_operator.infidelity_operator import InfidelityOperator, Rx
-
+from netket_fidelity._infidelity_operator import InfidelityOperator
+from netket_fidelity.operator._1qubit_rotations import Rx
+from netket_fidelity._infidelity_exact import _infidelity_exact
+from netket_fidelity._finite_diff import central_diff_grad, same_derivatives
 
 def _setup():
 
-    N = 10
-    n_samples = 10000
-
+    N = 4
+    n_samples = 1e6
+    n_discard_per_chain = 1e3
+    
     hi = nk.hilbert.Spin(0.5, N)
 
-    U = Rx(hi, 0, np.pi / 4)
-    U_dagger = Rx(hi, 0, -np.pi / 4)
-
-    U_matrx = U.to_dense()
+    U = Rx(hi, 0, 0.01)
+    U_dagger = Rx(hi, 0, -0.01)
 
     sampler = nk.sampler.MetropolisLocal(hilbert=hi, n_chains_per_rank=16)
 
     model = nk.models.RBM(alpha=1, param_dtype=complex)
 
-    vstate_old = nk.vqs.MCState(sampler=sampler, model=model, n_samples=n_samples)
-    vstate_new = nk.vqs.MCState(sampler=sampler, model=model, n_samples=n_samples)
+    vstate_old = nk.vqs.MCState(sampler=sampler, model=model, n_samples=n_samples, n_discard_per_chain=n_discard_per_chain)
+    vstate_new = nk.vqs.MCState(sampler=sampler, model=model, n_samples=n_samples, n_discard_per_chain=n_discard_per_chain)
 
-    return vstate_old, vstate_new, U, U_dagger, U_matrx
-
-
-def _infidelity_exact(vstate, params_new, U_matrx):
-    params_old = vstate.parameters
-    state_old = vstate.to_array()
-
-    def infidelity_expect(params):
-        vstate.parameters = params
-        state_new = vstate.to_array()
-        vstate.parameters = params_old
-
-        return 1 - jnp.square(
-            jnp.absolute(state_new.conj().T @ U_matrx @ state_old)
-        ) / ((state_new.conj().T @ state_new) * (state_old.conj().T @ state_old))
-
-    infidelity_grad = nk.jax.grad(infidelity_expect)
-
-    return infidelity_expect(params_new), infidelity_grad(params_new)
+    return vstate_old, vstate_new, U, U_dagger
 
 
 def test_infidelity():
-    vstate_old, vstate_new, U, U_dagger, U_matrx = _setup()
+    vstate_old, vstate_new, U, U_dagger = _setup()
+    U_sparse = U.to_sparse()
 
-    infidelity_exact, infidelity_grad_exact = _infidelity_exact(
-        vstate_old, vstate_new.parameters, U_matrx
-    )
-    I = InfidelityOperator(vstate_old, U=U, U_dagger=U_dagger)
-    infidelity_sampled, infidelity_grad_sampled = vstate_new.expect_and_grad(I)
-    np.testing.assert_allclose(
-        infidelity_sampled.mean,
-        infidelity_exact,
-        atol=3 * infidelity_sampled.error_of_mean,
-    )
-    # jax.tree_map(
-    # 	lambda x, y: np.testing.assert_allclose(x, np.conjugate(y), rtol = 0.3),
-    # 	infidelity_grad_sampled,
-    # 	infidelity_grad_exact
-    # )
+    params_0 = vstate_new.parameters
+    params, unravel = nk.jax.tree_ravel(params_0)
 
-    I = InfidelityOperator(vstate_old, U=U, U_dagger=U_dagger, sampling_Uold=True)
-    infidelity_sampled, infidelity_grad_sampled = vstate_new.expect_and_grad(I)
-    np.testing.assert_allclose(
-        infidelity_sampled.mean,
-        infidelity_exact,
-        atol=3 * infidelity_sampled.error_of_mean,
-    )
-    # jax.tree_map(
-    # 	lambda x, y: np.testing.assert_allclose(x, np.conjugate(y), rtol = 0.3),
-    # 	infidelity_grad_sampled,
-    # 	infidelity_grad_exact
-    # )
+    def _infidelity_exact_fun(params, vstate, U_sparse):
+        return _infidelity_exact(unravel(params), vstate, U_sparse)
 
-    infidelity_exact, infidelity_grad_exact = _infidelity_exact(
-        vstate_old, vstate_new.parameters, jnp.identity(U_matrx.shape[0])
+    I_exact = _infidelity_exact(
+        vstate_new.parameters, vstate_old, U_sparse, 
     )
-    I = InfidelityOperator(vstate_old)
-    infidelity_sampled, infidelity_grad_sampled = vstate_new.expect_and_grad(I)
-    np.testing.assert_allclose(
-        infidelity_sampled.mean,
-        infidelity_exact,
-        atol=3 * infidelity_sampled.error_of_mean,
+
+    grad_exact = central_diff_grad(_infidelity_exact_fun, params, 1.0e-5, vstate_old, U_sparse)
+
+    for b in [True, False]: 
+
+        I_op = InfidelityOperator(vstate_old, U=U, U_dagger=U_dagger, sampling_Uold = b, c = -0.5)
+        
+        I_stat1 = vstate_new.expect(I_op)
+        I_stat, I_grad = vstate_new.expect_and_grad(I_op)
+        
+        I1_mean = np.asarray(I_stat1.mean)
+        I_mean = np.asarray(I_stat.mean)
+        err = 5 * I_stat1.error_of_mean
+
+        np.testing.assert_allclose(I_exact.real, I1_mean.real, atol=err, rtol=err)
+
+        assert I1_mean.real == approx(I_mean.real, abs=1e-5)
+        assert np.asarray(I_stat1.variance) == approx(np.asarray(I_stat.variance), abs=1e-5)
+
+        I_grad, _ = nk.jax.tree_ravel(I_grad)
+        
+        same_derivatives(I_grad, grad_exact, rel_eps=1e-1)
+
+
+    I_exact = _infidelity_exact(
+        vstate_new.parameters, vstate_old, scipy.sparse.identity(U_sparse.shape[0]), 
     )
-    # jax.tree_map(
-    # 	lambda x, y: np.testing.assert_allclose(x, np.conjugate(y), rtol = 0.3),
-    # 	infidelity_grad_sampled,
-    # 	infidelity_grad_exact
-    # )
+
+    grad_exact = central_diff_grad(_infidelity_exact_fun, params, 1.0e-5, vstate_old, scipy.sparse.identity(U_sparse.shape[0]))
+
+    I_op = InfidelityOperator(vstate_old, c = -0.5)
+    
+    I_stat1 = vstate_new.expect(I_op)
+    I_stat, I_grad = vstate_new.expect_and_grad(I_op)
+    
+    I1_mean = np.asarray(I_stat1.mean)
+    I_mean = np.asarray(I_stat.mean)
+    err = 5 * I_stat1.error_of_mean
+
+    np.testing.assert_allclose(I_exact.real, I1_mean.real, atol=err, rtol=err)
+
+    assert I1_mean.real == approx(I_mean.real, abs=1e-5)
+    assert np.asarray(I_stat1.variance) == approx(np.asarray(I_stat.variance), abs=1e-5)
+
+    I_grad, _ = nk.jax.tree_ravel(I_grad)
+
+    same_derivatives(I_grad, grad_exact, rel_eps = 1e-1)
+

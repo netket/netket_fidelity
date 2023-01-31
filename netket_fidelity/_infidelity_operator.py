@@ -1,28 +1,14 @@
-from typing import Optional, Callable, Tuple
+from typing import Optional
 from functools import partial
 import jax.numpy as jnp
-import numpy as np
 import jax
-from jax.tree_util import register_pytree_node_class
 import netket as nk
-from netket.operator import AbstractOperator, DiscreteOperator
-from netket.utils.types import DType, PyTree
+from netket.operator import AbstractOperator
+from netket.utils.types import DType
 from netket.utils.dispatch import TrueT
-from netket.jax._vjp import vjp as nkvjp
-from netket.stats import statistics as mpi_statistics, Stats
 
-from ._expect import expect_fid
-
-
-def sampling_Ustate(apply_fun, U, variables, x):
-    xp, mels = U.get_conn_padded(x)
-    logpsi_xp = apply_fun(variables, xp)
-
-    @jax.jit
-    def sampling_Ustate_inner(logpsi_xp, mels):
-        return jax.scipy.special.logsumexp(logpsi_xp, axis=-1, b=mels)
-
-    return sampling_Ustate_inner(logpsi_xp, mels)
+from ._expect import expect_2distr
+from ._sampling_Ustate import sampling_Ustate
 
 
 class InfidelityOperator(AbstractOperator):
@@ -252,6 +238,7 @@ def infidelity_sampling_old(
     return_grad,
 ):
 
+
     N = sigma_new.shape[-1]
     n_chains_new = sigma_new.shape[-2]
 
@@ -424,7 +411,94 @@ def infidelity_sampling_old(
 
     I_stats = F_stats.replace(mean=1 - F)
 
-    return I_stats, I_grad
+    if(return_grad):
+        return I_stats, I_grad
+    else: 
+        return I_stats
+
+"""
+    N = sigma_new.shape[-1]
+    n_chains_old = sigma_old.shape[-2]
+
+    sigma_new = sigma_new.reshape(-1, N)
+    sigma_old = sigma_old.reshape(-1, N)
+
+    conns_new = args_new[0].reshape(sigma_new.shape[0], -1, N)
+    mels_new = args_new[1].reshape(sigma_new.shape[0], -1)
+    conns_old_dagger = args_old_dagger[0].reshape(sigma_old.shape[0], -1, N)
+    mels_old_dagger = args_old_dagger[1].reshape(sigma_old.shape[0], -1)
+
+
+    def kernel_shifted_expect(params_new):
+        def kernel_fun(params_new, params_old, sigma_new, sigma_old):
+            variables_new = {"params": params_new, **model_state_new}
+            variables_old = {"params": params_old, **model_state_old}
+
+            logpsi0_new = apply_fun_old(variables_old, conns_new)
+
+            logpsi_new = jnp.expand_dims(apply_fun_new(variables_new, sigma_new), -1)
+
+            ratio_new = jnp.exp(logpsi0_new - logpsi_new)
+
+            term_new = jnp.sum(mels_new * ratio_new, axis=1)
+
+            logpsi_old = apply_fun_new(variables_new, conns_old_dagger)
+
+            logpsi0_old = jnp.expand_dims(apply_fun_old(variables_old, sigma_old), -1)
+
+            ratio_old = jnp.exp(logpsi_old - logpsi0_old)
+
+            term_old = jnp.sum(mels_old_dagger * ratio_old, axis=1)
+
+
+            return jnp.real(term_new * term_old) + c * (
+                jnp.square(jnp.abs(term_new * term_old)) - 1
+            )
+
+
+        log_pdf_new = lambda params, sigma: jnp.log(
+            jnp.square(jnp.absolute(jnp.exp(apply_fun_new({"params": params}, sigma))))
+        )
+
+        log_pdf_old = lambda params, sigma: jnp.log(
+            jnp.square(jnp.absolute(jnp.exp(apply_fun_old({"params": params}, sigma))))
+        )
+
+        return expect_2distr(
+            log_pdf_new,
+            log_pdf_old,
+            kernel_fun,
+            params_new,
+            params_old,
+            sigma_new,
+            sigma_old,
+            n_chains=n_chains_old,
+        )
+
+
+    if not return_grad:
+        F, F_stats = kernel_shifted_expect(params_new)
+        return F_stats.replace(mean=1 - F)
+
+    F, F_vjp_fun, F_stats = nk.jax.vjp(
+        kernel_shifted_expect, params_new, has_aux=True, conjugate=True
+    )
+
+    F_grad = F_vjp_fun(jnp.ones_like(F))[0]
+
+    F_grad = jax.tree_map(lambda x: nk.utils.mpi.mpi_mean_jax(x)[0], F_grad)
+
+    I_grad = jax.tree_map(lambda x: -x, F_grad)
+
+    I_stats = F_stats.replace(mean=1 - F)
+
+
+    if(return_grad):
+        return I_stats, I_grad
+    else: 
+        return I_stats
+
+"""
 
 
 @partial(jax.jit, static_argnames=("apply_fun_old", "apply_fun_new", "return_grad"))
@@ -476,7 +550,7 @@ def infidelity_sampling_Uold(
             jnp.square(jnp.absolute(jnp.exp(apply_fun_old({"params": params}, sigma))))
         )
 
-        return expect_fid(
+        return expect_2distr(
             log_pdf_new,
             log_pdf_old,
             kernel_fun,
@@ -503,4 +577,8 @@ def infidelity_sampling_Uold(
 
     I_stats = F_stats.replace(mean=1 - F)
 
-    return I_stats, I_grad
+
+    if(return_grad):
+        return I_stats, I_grad
+    else: 
+        return I_stats

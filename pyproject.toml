@@ -41,7 +41,7 @@ branch = true
 parallel = true
 concurrency = ["multiprocessing"]
 command_line = "-m pytest --verbose test"
-source = ["tensorV"]
+source = ["netket_fidelity"]
 
 [tool.pytest.ini_options]
 addopts = "--color=yes --verbose --durations=100 -n auto --tb=short"
