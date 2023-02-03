@@ -8,7 +8,7 @@ from netket.operator import DiscreteOperator
 
 
 @register_pytree_node_class
-class Rx(DiscreteOperator):    
+class Rx(DiscreteOperator):
     def __init__(self, hi, idx, angle):
         super().__init__(hi)
         self.idx = idx
