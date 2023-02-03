@@ -7,8 +7,7 @@ from netket.operator import AbstractOperator
 from netket.utils.types import DType
 from netket.utils.dispatch import TrueT
 
-from ._expect import expect_2distr
-from ._sampling_Ustate import sampling_Ustate
+from netket_fidelity.utils import expect_2distr, sampling_Ustate
 
 
 class InfidelityOperator(AbstractOperator):
@@ -36,7 +35,7 @@ class InfidelityOperator(AbstractOperator):
             print(
                 " You can only work with unitary operators if you don't sample from the target state. "
             )
-            print(" To do this, pass is_unitary=True as an argument. ")
+            print(" To do this, pass sampling_Uold=True as an argument. ")
 
         if sampling_Uold is True and U is not None and U_dagger is not None:
             logpsiU = nk.jax.HashablePartial(sampling_Ustate, state._apply_fun, U)
@@ -238,7 +237,6 @@ def infidelity_sampling_old(
     return_grad,
 ):
 
-
     N = sigma_new.shape[-1]
     n_chains_new = sigma_new.shape[-2]
 
@@ -411,10 +409,11 @@ def infidelity_sampling_old(
 
     I_stats = F_stats.replace(mean=1 - F)
 
-    if(return_grad):
+    if return_grad:
         return I_stats, I_grad
-    else: 
+    else:
         return I_stats
+
 
 """
     N = sigma_new.shape[-1]
@@ -577,8 +576,7 @@ def infidelity_sampling_Uold(
 
     I_stats = F_stats.replace(mean=1 - F)
 
-
-    if(return_grad):
+    if return_grad:
         return I_stats, I_grad
-    else: 
+    else:
         return I_stats
