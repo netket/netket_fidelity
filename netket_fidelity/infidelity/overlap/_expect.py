@@ -81,7 +81,7 @@ def infidelity_sampling_MCState(
     σ = sigma.reshape(-1, N)
     σ_t = sigma_t.reshape(-1, N)
 
-    def kernel_shifted_expect(params):
+    def expect_kernel(params):
         def kernel_fun(params, params_t, σ, σ_t):
             W = {"params": params, **model_state}
             W_t = {"params": params_t, **model_state_t}
@@ -92,11 +92,10 @@ def infidelity_sampling_MCState(
                 res = res + cv_coeff * (jnp.exp(2 * log_val.real) - 1)
             return res
 
-        W = {"params": params, **model_state}
-        W_t = {"params": params_t, **model_state_t}
-
-        log_pdf = lambda W, σ: 2 * afun(W, σ).real
-        log_pdf_t = lambda W, σ: 2 * afun_t(W, σ).real
+        log_pdf = lambda params, σ: 2 * afun({"params": params, **model_state}, σ).real
+        log_pdf_t = (
+            lambda params, σ: 2 * afun_t({"params": params, **model_state_t}, σ).real
+        )
 
         return expect_2distr(
             log_pdf,
@@ -110,11 +109,11 @@ def infidelity_sampling_MCState(
         )
 
     if not return_grad:
-        F, F_stats = kernel_shifted_expect(params)
+        F, F_stats = expect_kernel(params)
         return F_stats.replace(mean=1 - F)
 
     F, F_vjp_fun, F_stats = nkjax.vjp(
-        kernel_shifted_expect, params, has_aux=True, conjugate=True
+        expect_kernel, params, has_aux=True, conjugate=True
     )
 
     F_grad = F_vjp_fun(jnp.ones_like(F))[0]

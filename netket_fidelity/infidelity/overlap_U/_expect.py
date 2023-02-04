@@ -1,7 +1,10 @@
 from typing import Optional
 from functools import partial
+
 import jax.numpy as jnp
 import jax
+from jax.scipy.special import logsumexp
+
 from netket.operator import AbstractOperator
 from netket.utils.types import DType
 from netket.utils.dispatch import TrueT
@@ -9,6 +12,7 @@ from netket.utils.numbers import is_scalar
 from netket.vqs import MCState, expect, expect_and_grad
 from netket import jax as nkjax
 from netket.utils import mpi
+import netket as nk
 
 from netket_fidelity.utils import expect_2distr
 
@@ -16,23 +20,24 @@ from ._operator import InfidelityOperatorUPsi
 
 
 @expect.dispatch
-def infidelity(vstate: MCState, op: InfidelityOperator):
-    sigma_new, args_new = nk.vqs.get_local_kernel_arguments(vstate, op._U)
-    sigma_old, args_old_dagger = nk.vqs.get_local_kernel_arguments(
-        op.target, op._U_dagger
-    )
+def infidelity(vstate: MCState, op: InfidelityOperatorUPsi):
+    if op.hilbert != vstate.hilbert:
+        raise TypeError("Hilbert spaces should match")
 
-    return infidelity_sampling_old(
+    sigma, args = nk.vqs.get_local_kernel_arguments(vstate, op._U)
+    sigma_t, args_t = nk.vqs.get_local_kernel_arguments(op.target, op._U_dagger)
+
+    return infidelity_sampling_MCState(
         vstate._apply_fun,
         op.target._apply_fun,
         vstate.parameters,
         op.target.parameters,
         vstate.model_state,
         op.target.model_state,
-        sigma_new,
-        args_new,
-        sigma_old,
-        args_old_dagger,
+        sigma,
+        args,
+        sigma_t,
+        args_t,
         op.cv_coeff,
         return_grad=False,
     )
@@ -41,218 +46,121 @@ def infidelity(vstate: MCState, op: InfidelityOperator):
 @expect_and_grad.dispatch
 def infidelity(
     vstate: MCState,
-    op: InfidelityOperator,
+    op: InfidelityOperatorUPsi,
     use_covariance: TrueT,
     *,
     mutable,
 ):
-    sigma_new, args_new = nk.vqs.get_local_kernel_arguments(vstate, op._U)
-    sigma_old, args_old_dagger = nk.vqs.get_local_kernel_arguments(
-        op.target, op._U_dagger
-    )
+    if op.hilbert != vstate.hilbert:
+        raise TypeError("Hilbert spaces should match")
 
-    return infidelity_sampling_old(
+    sigma, args = nk.vqs.get_local_kernel_arguments(vstate, op._U)
+    sigma_t, args_t = nk.vqs.get_local_kernel_arguments(op.target, op._U_dagger)
+
+    return infidelity_sampling_MCState(
         vstate._apply_fun,
         op.target._apply_fun,
         vstate.parameters,
         op.target.parameters,
         vstate.model_state,
         op.target.model_state,
-        sigma_new,
-        args_new,
-        sigma_old,
-        args_old_dagger,
+        sigma,
+        args,
+        sigma_t,
+        args_t,
         op.cv_coeff,
         return_grad=True,
     )
 
 
 @partial(jax.jit, static_argnames=("afun", "afun_t", "return_grad"))
-def infidelity_sampling_old(
+def infidelity_sampling_MCState(
     afun,
     afun_t,
-    params_new,
-    params_old,
-    model_state_new,
-    model_state_old,
-    sigma_new,
-    args_new,
-    sigma_old,
-    args_old_dagger,
-    c,
+    params,
+    params_t,
+    model_state,
+    model_state_t,
+    sigma,
+    args,
+    sigma_t,
+    args_t,
+    cv_coeff,
     return_grad,
 ):
 
-    N = sigma_new.shape[-1]
-    n_chains_new = sigma_new.shape[-2]
+    N = sigma.shape[-1]
+    n_chains_t = sigma_t.shape[-2]
 
-    sigma_new = sigma_new.reshape(-1, N)
-    sigma_old = sigma_old.reshape(-1, N)
+    σ = sigma.reshape(-1, N)
+    σ_t = sigma_t.reshape(-1, N)
 
-    conns_new = args_new[0].reshape(sigma_new.shape[0], -1, N)
-    mels_new = args_new[1].reshape(sigma_new.shape[0], -1)
-    conns_old_dagger = args_old_dagger[0].reshape(sigma_old.shape[0], -1, N)
-    mels_old_dagger = args_old_dagger[1].reshape(sigma_old.shape[0], -1)
+    xp = args[0].reshape(σ.shape[0], -1, N)
+    mels = args[1].reshape(σ.shape[0], -1)
+    xp_t = args_t[0].reshape(σ_t.shape[0], -1, N)
+    mels_t = args_t[1].reshape(σ_t.shape[0], -1)
 
-    n_conns_new = args_new[0].shape[-2]
-    n_conns_old_dagger = args_old_dagger[0].shape[-2]
+    n_xp = args[0].shape[-2]
+    n_xp_t = args_t[0].shape[-2]
 
-    n_samples = sigma_new.shape[0]
+    n_samples = σ.shape[0]
 
-    conns_new_splitted = [
-        c.reshape(n_samples, N) for c in jnp.split(conns_new, n_conns_new, axis=-2)
-    ]
-    conns_new_ravel = jnp.vstack(conns_new_splitted)
+    xp_splitted = [c.reshape(n_samples, N) for c in jnp.split(xp, n_xp, axis=-2)]
+    xp_ravel = jnp.vstack(xp_splitted)
 
-    conns_old_dagger_splitted = [
-        c.reshape(n_samples, N)
-        for c in jnp.split(conns_old_dagger, n_conns_old_dagger, axis=-2)
-    ]
-    conns_old_dagger_ravel = jnp.vstack(conns_old_dagger_splitted)
+    xp_t_splitted = [c.reshape(n_samples, N) for c in jnp.split(xp_t, n_xp_t, axis=-2)]
+    xp_t_ravel = jnp.vstack(xp_t_splitted)
 
-    params_new_real = jax.tree_map(lambda x: jnp.real(x), params_new)
-    params_new_imag = jax.tree_map(lambda x: jnp.imag(x), params_new)
+    def expect_kernel(params):
+        def kernel_fun(params, params_t, σ, σ_t):
 
-    def kernel_fun_real(params_new_real, params_old, sigma_new, sigma_old):
+            W = {"params": params, **model_state}
+            W_t = {"params": params_t, **model_state_t}
 
-        params_new = jax.tree_map(
-            lambda x, y: x + 1j * y, params_new_real, params_new_imag
+            logpsi_t_xp = jnp.split(afun_t(W_t, xp_ravel), n_xp, axis=0)
+            logpsi_t_xp = jnp.stack(logpsi_t_xp, axis=1)
+
+            logpsi_xp_t = jnp.split(afun(W, xp_t_ravel), n_xp_t, axis=0)
+            logpsi_xp_t = jnp.stack(logpsi_xp_t, axis=1)
+
+            log_val = (
+                logsumexp(logpsi_t_xp, axis=-1, b=mels)
+                + logsumexp(logpsi_xp_t, axis=-1, b=mels_t)
+                - afun(W, σ)
+                - afun_t(W_t, σ_t)
+            )
+            res = jnp.exp(log_val).real
+            if cv_coeff is not None:
+                res = res + cv_coeff * (jnp.exp(2 * log_val.real) - 1)
+            return res
+
+        log_pdf = lambda params, σ: 2 * afun({"params": params, **model_state}, σ).real
+        log_pdf_t = (
+            lambda params, σ: 2 * afun_t({"params": params, **model_state_t}, σ).real
         )
 
-        variables_new = {"params": params_new, **model_state_new}
-        variables_old = {"params": params_old, **model_state_old}
-
-        logpsi0_new_ravel = afun_t(variables_old, conns_new_ravel)
-
-        logpsi0_new_splitted = jnp.split(logpsi0_new_ravel, n_conns_new, axis=0)
-
-        logpsi0_new = jnp.stack(logpsi0_new_splitted, axis=1)
-
-        logpsi_new = jnp.expand_dims(afun(variables_new, sigma_new), -1)
-
-        ratio_new = jnp.exp(logpsi0_new - logpsi_new)
-
-        term_new = jnp.sum(mels_new * ratio_new, axis=1)
-
-        logpsi_old_ravel = afun(variables_new, conns_old_dagger_ravel)
-
-        logpsi_old_splitted = jnp.split(logpsi_old_ravel, n_conns_old_dagger, axis=0)
-
-        logpsi_old = jnp.stack(logpsi_old_splitted, axis=1)
-
-        logpsi0_old = jnp.expand_dims(afun_t(variables_old, sigma_old), -1)
-
-        ratio_old = jnp.exp(logpsi_old - logpsi0_old)
-
-        term_old = jnp.sum(mels_old_dagger * ratio_old, axis=1)
-
-        return jnp.real(term_new * term_old) + c * (
-            jnp.square(jnp.abs(term_new * term_old)) - 1
+        return expect_2distr(
+            log_pdf,
+            log_pdf_t,
+            kernel_fun,
+            params,
+            params_t,
+            σ,
+            σ_t,
+            n_chains=n_chains_t,
         )
 
-    def kernel_fun_imag(params_new_imag, params_old, sigma_new, sigma_old):
+    if not return_grad:
+        F, F_stats = expect_kernel(params)
+        return F_stats.replace(mean=1 - F)
 
-        params_new = jax.tree_map(
-            lambda x, y: x + 1j * y, params_new_real, params_new_imag
-        )
-
-        variables_new = {"params": params_new, **model_state_new}
-        variables_old = {"params": params_old, **model_state_old}
-
-        logpsi0_new_ravel = afun_t(variables_old, conns_new_ravel)
-
-        logpsi0_new_splitted = jnp.split(logpsi0_new_ravel, n_conns_new, axis=0)
-
-        logpsi0_new = jnp.stack(logpsi0_new_splitted, axis=1)
-
-        logpsi_new = jnp.expand_dims(afun(variables_new, sigma_new), -1)
-
-        ratio_new = jnp.exp(logpsi0_new - logpsi_new)
-
-        term_new = jnp.sum(mels_new * ratio_new, axis=1)
-
-        logpsi_old_ravel = afun(variables_new, conns_old_dagger_ravel)
-
-        logpsi_old_splitted = jnp.split(logpsi_old_ravel, n_conns_old_dagger, axis=0)
-
-        logpsi_old = jnp.stack(logpsi_old_splitted, axis=1)
-
-        logpsi0_old = jnp.expand_dims(afun_t(variables_old, sigma_old), -1)
-
-        ratio_old = jnp.exp(logpsi_old - logpsi0_old)
-
-        term_old = jnp.sum(mels_old_dagger * ratio_old, axis=1)
-
-        return jnp.real(term_new * term_old) + c * (
-            jnp.square(jnp.abs(term_new * term_old)) - 1
-        )
-
-    def apply_fun_new_real(params_new_real):
-        params_new = jax.tree_map(
-            lambda x, y: x + 1j * y, params_new_real, params_new_imag
-        )
-        return afun({"params": params_new, **model_state_new}, sigma_new)
-
-    def apply_fun_new_imag(params_new_imag):
-        params_new = jax.tree_map(
-            lambda x, y: x + 1j * y, params_new_real, params_new_imag
-        )
-        return afun({"params": params_new, **model_state_new}, sigma_new)
-
-    _, Ok_vjp_real = nk.jax.vjp(apply_fun_new_real, params_new_real)
-    __, Ok_vjp_imag = nk.jax.vjp(apply_fun_new_imag, params_new_imag)
-
-    F_vals_real, F_vjp_real = nk.jax.vjp(
-        kernel_fun_real, params_new_real, params_old, sigma_new, sigma_old
+    F, F_vjp_fun, F_stats = nkjax.vjp(
+        expect_kernel, params, has_aux=True, conjugate=True
     )
 
-    F_vals_imag, F_vjp_imag = nk.jax.vjp(
-        kernel_fun_imag, params_new_imag, params_old, sigma_new, sigma_old
-    )
-
-    F_stats = nk.stats.statistics(F_vals_real.reshape((n_chains_new, -1)).T)
-
-    F = F_stats.mean
-
-    first_term_real = Ok_vjp_real(F_vals_real - F)[0]
-    first_term_imag = Ok_vjp_imag(F_vals_imag - F)[0]
-
-    second_term_real = F_vjp_real(jnp.ones_like(F_vals_real))[0]
-    second_term_imag = F_vjp_imag(jnp.ones_like(F_vals_imag))[0]
-
-    first_term_real = jax.tree_map(
-        lambda x, target: (x if jnp.iscomplexobj(target) else 2 * x.real).astype(
-            target.dtype
-        ),
-        first_term_real,
-        params_new_real,
-    )
-    first_term_imag = jax.tree_map(
-        lambda x, target: (x if jnp.iscomplexobj(target) else 2 * x.real).astype(
-            target.dtype
-        ),
-        first_term_imag,
-        params_new_imag,
-    )
-
-    F_grad_real = jax.tree_map(
-        lambda x, y: nk.utils.mpi.mpi_mean_jax((x + y) / sigma_new.shape[0])[0],
-        first_term_real,
-        second_term_real,
-    )
-
-    F_grad_imag = jax.tree_map(
-        lambda x, y: nk.utils.mpi.mpi_mean_jax((x + y) / sigma_new.shape[0])[0],
-        first_term_imag,
-        second_term_imag,
-    )
-
-    F_grad = jax.tree_map(lambda x, y: x + 1j * y, F_grad_real, F_grad_imag)
+    F_grad = F_vjp_fun(jnp.ones_like(F))[0]
+    F_grad = jax.tree_map(lambda x: mpi.mpi_mean_jax(x)[0], F_grad)
     I_grad = jax.tree_map(lambda x: -x, F_grad)
-
     I_stats = F_stats.replace(mean=1 - F)
 
-    if return_grad:
-        return I_stats, I_grad
-    else:
-        return I_stats
+    return I_stats, I_grad
