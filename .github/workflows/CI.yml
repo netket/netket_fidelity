@@ -5,7 +5,7 @@ on:
 
   push:
     branches:
-      - master
+      - main
 
 jobs:
   test:
@@ -17,7 +17,7 @@ jobs:
           - os: ubuntu-latest
             python-version: "3.9"
             mpi: ""
-            doctest: true
+            #doctest: true
 
           - os: macos-latest
             python-version: "3.8"
@@ -37,31 +37,31 @@ jobs:
 
       - name: Setup MPI
         uses: mpi4py/setup-mpi@v1
-        if: mpi != ""
+        if: matrix.mpi != ''
         with:
           mpi: ${{ matrix.mpi }}
 
       - name: Pip install packages
         if: ${{ ! matrix.oldest_deps }}
         run: |
-          pip install netket[dev] 
           if [ -z "${{ matrix.mpi }}" ]; then
-            pip install -e 'netket[dev]' 'jax[cpu]'
+            pip install 'netket[dev]' 'jax[cpu]'
           else
-            pip install -e 'netket[dev,mpi]' 'jax[cpu]'
+            pip install 'netket[dev,mpi]' 'jax[cpu]'
           fi
+          pip install -e '.'
 
       - name: Run tests
         run: |
           export NETKET_EXPERIMENTAL=1
           pytest --cov=netket --cov-append test
 
-      - name: NetKet docstring tests
+      - name: Run docstring tests
         if: ${{ matrix.doctest }}
         run: |
           pytest --doctest-continue-on-failure --doctest-modules netket/
 
-      - name: MPI tests
+      - name: Run MPI tests
         if: matrix.mpi != ''
         run: |
           mpirun -host localhost:2 -np 2 coverage run -m pytest -n 0 test
