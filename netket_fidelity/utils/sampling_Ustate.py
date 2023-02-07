@@ -1,7 +1,7 @@
 import jax
 
 
-def sampling_Ustate(apply_fun, U, variables, x):
+def sample_Ustate(apply_fun, U, variables, x):
     xp, mels = U.get_conn_padded(x)
     logpsi_xp = apply_fun(variables, xp)
 

@@ -14,11 +14,11 @@ from netket.utils import mpi
 
 from netket_fidelity.utils import expect_2distr
 
-from ._operator import InfidelityOperator
+from .operator import InfidelityOperatorStandard
 
 
 @expect.dispatch
-def infidelity(vstate: MCState, op: InfidelityOperator):
+def infidelity(vstate: MCState, op: InfidelityOperatorStandard):
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")
 
@@ -39,7 +39,7 @@ def infidelity(vstate: MCState, op: InfidelityOperator):
 @expect_and_grad.dispatch
 def infidelity(
     vstate: MCState,
-    op: InfidelityOperator,
+    op: InfidelityOperatorStandard,
     use_covariance: TrueT,
     *,
     mutable,

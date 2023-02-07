@@ -12,11 +12,11 @@ from netket.utils.numbers import is_scalar
 from netket.vqs import ExactState, expect, expect_and_grad
 from netket.utils import mpi
 
-from ._operator import InfidelityOperator
+from .operator import InfidelityOperatorStandard
 
 
 @expect.dispatch
-def infidelity(vstate: ExactState, op: InfidelityOperator):
+def infidelity(vstate: ExactState, op: InfidelityOperatorStandard):
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")
     if not isinstance(op.target, ExactState):
@@ -34,8 +34,8 @@ def infidelity(vstate: ExactState, op: InfidelityOperator):
 
 @expect_and_grad.dispatch
 def infidelity(
-    vstate: MCState,
-    op: InfidelityOperator,
+    vstate: ExactState,
+    op: InfidelityOperatorStandard,
     use_covariance: TrueT,
     *,
     mutable,
@@ -55,7 +55,7 @@ def infidelity(
     )
 
 
-@partial(jax.jit, static_argnames=("apply_fun_old", "apply_fun_new", "return_grad"))
+@partial(jax.jit, static_argnames=("afun", "return_grad"))
 def infidelity_sampling_ExactState(
     afun,
     params,

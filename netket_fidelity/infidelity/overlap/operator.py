@@ -5,42 +5,42 @@ from netket import jax as nkjax
 from netket.operator import AbstractOperator
 from netket.utils.types import DType
 from netket.utils.numbers import is_scalar
-from netket.vqs import AbstractVariationalState, ExactState
+from netket.vqs import VariationalState, ExactState, MCState
 
-from netket_fidelity.utils import sampling_Ustate
+from netket_fidelity.utils import sample_Ustate
 
 
 class InfidelityOperatorStandard(AbstractOperator):
     def __init__(
         self,
-        target: AbstractVariationalState,
+        target: VariationalState,
         *,
-        control_variates: Optional[float] = None,
+        cv_coeff: Optional[float] = None,
         dtype: Optional[DType] = None,
     ):
         super().__init__(target.hilbert)
 
-        if not isinstance(target, AbstractVariationalState):
+        if not isinstance(target, VariationalState):
             raise TypeError("The first argument should be a variational target.")
 
-        if control_variates is not None:
-            control_variates = jnp.array(control_variates)
+        if cv_coeff is not None:
+            cv_coeff = jnp.array(cv_coeff)
 
-            if (not is_scalar(control_variates)) or jnp.iscomplex(control_variates):
-                raise TypeError(
-                    "control_variates should be a real scalar number or None."
-                )
+            if (not is_scalar(cv_coeff)) or jnp.iscomplex(cv_coeff):
+                raise TypeError("`cv_coeff` should be a real scalar number or None.")
 
             if isinstance(target, ExactState):
                 raise ValueError("With ExactState the control variate should be None")
 
         self._target = target
-        self._cv_coeff = control_variates
+        self._cv_coeff = cv_coeff
         self._dtype = dtype
 
+    @property
     def target(self):
         return self._target
 
+    @property
     def cv_coeff(self):
         return self._cv_coeff
 
@@ -57,15 +57,14 @@ class InfidelityOperatorStandard(AbstractOperator):
 
 
 def InfidelityUPsi(
-    self,
-    state: AbstractVariationalState,
     U: AbstractOperator,
+    state: VariationalState,
     *,
-    control_variates: Optional[float] = None,
+    cv_coeff: Optional[float] = None,
     dtype: Optional[DType] = None,
 ):
 
-    logpsiU_apply_fun = nkjax.HashablePartial(sampling_Ustate, state._apply_fun, U)
+    logpsiU_apply_fun = nkjax.HashablePartial(sample_Ustate, state._apply_fun, U)
     target = MCState(
         sampler=state.sampler,
         apply_fun=logpsiU_apply_fun,
@@ -73,6 +72,4 @@ def InfidelityUPsi(
         variables=state.variables,
     )
 
-    return InfidelityOperatorStandard(
-        target, control_variates=control_variates, dtype=dtype
-    )
+    return InfidelityOperatorStandard(target, cv_coeff=cv_coeff, dtype=dtype)

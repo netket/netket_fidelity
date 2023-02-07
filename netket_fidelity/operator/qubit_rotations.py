@@ -18,6 +18,10 @@ class Rx(DiscreteOperator):
     def dtype(self):
         return complex
 
+    @property
+    def H(self):
+        return Rx(self.hilbert, self.idx, -self.angle * 2)
+
     def __hash__(self):
         return hash(("Rx", self.idx))
 
@@ -91,6 +95,10 @@ class Ry(DiscreteOperator):
     @property
     def dtype(self):
         return complex
+
+    @property
+    def H(self):
+        return Ry(self.hilbert, self.idx, -self.angle * 2)
 
     def __hash__(self):
         return hash(("Ry", self.idx))

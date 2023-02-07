@@ -1,4 +1,4 @@
-from ._operator import InfidelityOperator, InfidelityUPsi
+from .operator import InfidelityOperatorStandard, InfidelityUPsi
 
-from . import _expect
-from . import _exact
+from . import expect
+from . import exact

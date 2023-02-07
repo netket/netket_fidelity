@@ -1,3 +1,3 @@
 from . import operator
 
-from ._infidelity_operator import InfidelityOperator
+from . import infidelity

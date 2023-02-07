@@ -3,7 +3,7 @@ from functools import partial
 import jax.numpy as jnp
 import jax
 from netket.utils.types import PyTree
-from netket.jax._vjp import vjp as nkvjp
+from netket.jax import vjp as nkvjp
 from netket.stats import statistics as mpi_statistics, Stats
 
 

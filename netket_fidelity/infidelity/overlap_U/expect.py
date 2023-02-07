@@ -16,13 +16,15 @@ import netket as nk
 
 from netket_fidelity.utils import expect_2distr
 
-from ._operator import InfidelityOperatorUPsi
+from .operator import InfidelityOperatorUPsi
 
 
 @expect.dispatch
 def infidelity(vstate: MCState, op: InfidelityOperatorUPsi):
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")
+
+    print(type(vstate), type(op), type(op.target), type(op._U), type(op._U_dagger))
 
     sigma, args = nk.vqs.get_local_kernel_arguments(vstate, op._U)
     sigma_t, args_t = nk.vqs.get_local_kernel_arguments(op.target, op._U_dagger)
