@@ -13,7 +13,7 @@ from ._finite_diff import central_diff_grad, same_derivatives
 
 def _setup():
 
-    N = 4
+    N = 3
     n_samples = 1e6
     n_discard_per_chain = 1e3
 
@@ -79,7 +79,7 @@ def test_infidelity(sample_Upsi):
     I_mean = np.asarray(I_stat.mean)
     err = 5 * I_stat1.error_of_mean
 
-    np.testing.assert_allclose(I_exact.real, I1_mean.real, atol=err, rtol=err)
+    np.testing.assert_allclose(I_exact.real, I1_mean.real, atol=err)
 
     assert I1_mean.real == approx(I_mean.real, abs=1e-5)
     assert np.asarray(I_stat1.variance) == approx(np.asarray(I_stat.variance), abs=1e-5)
@@ -111,7 +111,7 @@ def test_infidelity(sample_Upsi):
     I_mean = np.asarray(I_stat.mean)
     err = 5 * I_stat1.error_of_mean
 
-    np.testing.assert_allclose(I_exact.real, I1_mean.real, atol=err, rtol=err)
+    np.testing.assert_allclose(I_exact.real, I1_mean.real, atol=err)
 
     assert I1_mean.real == approx(I_mean.real, abs=1e-5)
     assert np.asarray(I_stat1.variance) == approx(np.asarray(I_stat.variance), abs=1e-5)
