@@ -9,11 +9,11 @@ import netket_fidelity as nkf
 # To optimise the overlap with another state
 I_op = nkf.InfidelityOperator(target_vstate)
 
-# To optimise the overlap with U|psi> by sampling from psi and psi_target
+# To optimise the overlap with U|psi_target> by sampling from psi and psi_target
 U = nkf.operator.Rx(0.3)
 I_op = nkf.InfidelityOperator(target_vstate, U=U, is_unitary=True)
 
-# To optimise the overlap with U|psi> by sampling from psi and Upsi
+# To optimise the overlap with U|psi_target> by sampling from psi and Upsi_target
 I_op = nkf.InfidelityOperator(target_vstate, U=U, sample_Upsi=True)
 ```
 
