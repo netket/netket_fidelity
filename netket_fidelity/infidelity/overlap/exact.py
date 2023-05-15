@@ -11,6 +11,7 @@ from netket.utils.dispatch import TrueT
 from netket.utils.numbers import is_scalar
 from netket.vqs import ExactState, expect, expect_and_grad
 from netket.utils import mpi
+from netket.stats import Stats
 
 from .operator import InfidelityOperatorStandard
 
@@ -61,30 +62,24 @@ def infidelity_sampling_ExactState(
     params,
     model_state,
     sigma,
-    target_wf,
+    state_t,
     return_grad,
 ):
 
-    N = sigma_new.shape[-1]
-    n_chains_t = sigma_old.shape[-2]
-
-    σ = sigma_new.reshape(-1, N)
-    σ_t = sigma_old.reshape(-1, N)
-
     def expect_fun(params):
-        state_fw = jnp.exp(afun({"params": params, **model_state}))
-        state_fw = state_fw / jnp.sqrt(jnp.sum(jnp.abs(state_fw) ** 2))
-        return jnp.abs(state_fw.T.conj() @ target_wf) ** 2
+        state = jnp.exp(afun({"params": params, **model_state}, sigma))
+        state = state / jnp.sqrt(jnp.sum(jnp.abs(state) ** 2))
+        return jnp.abs(state.T.conj() @ state_t) ** 2
 
     if not return_grad:
-        F, F_stats = expect_fun(params)
-        return F_stats.replace(mean=1 - F)
+        F = expect_fun(params)
+        return Stats(mean=1-F, error_of_mean=0.0, variance=0.0)
 
-    F, F_vjp_fun, F_stats = nkjax.vjp(expect_fun, params, has_aux=True, conjugate=True)
+    F, F_vjp_fun = nkjax.vjp(expect_fun, params, conjugate=True)
 
     F_grad = F_vjp_fun(jnp.ones_like(F))[0]
     F_grad = jax.tree_map(lambda x: mpi.mpi_mean_jax(x)[0], F_grad)
     I_grad = jax.tree_map(lambda x: -x, F_grad)
-    I_stats = F_stats.replace(mean=1 - F)
+    I_stats = Stats(mean=1-F, error_of_mean=0.0, variance=0.0)
 
     return I_stats, I_grad

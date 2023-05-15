@@ -1,5 +1,6 @@
 This is a package for the infidelity operator to use in NetKet. It supports the use of a
-unitary/non-unitary gate and the control variates method on the infidelity estimator. 
+unitary/non-unitary gate, sampling from the target state or the gate applied to it and 
+the control variates method on the estimator. 
 
 python
 ```
@@ -22,4 +23,6 @@ I_op = nkf.InfidelityOperator(target_vstate, U=U, is_unitary=True)
 I_op = nkf.InfidelityOperator(target_vstate, U=U, sample_Upsi=True)
 ```
 
-The package also exports a few special operators that are jax compatible and work well with the infidelityoperator. Those are needed for some options.
+The package also exports a few special operators that are jax compatible and work well with the 
+infidelity operator. Those are needed if you want to sample from the state obtained applying the 
+gate to the target state.

@@ -7,7 +7,7 @@ from netket.utils.types import DType
 from netket.utils.numbers import is_scalar
 from netket.vqs import VariationalState, ExactState, MCState
 
-from netket_fidelity.utils import sample_Ustate
+from netket_fidelity.utils.sampling_Ustate import _logpsi_U
 
 
 class InfidelityOperatorStandard(AbstractOperator):
@@ -30,7 +30,7 @@ class InfidelityOperatorStandard(AbstractOperator):
                 raise TypeError("`cv_coeff` should be a real scalar number or None.")
 
             if isinstance(target, ExactState):
-                raise ValueError("With ExactState the control variate should be None")
+                cv_coeff = None
 
         self._target = target
         self._cv_coeff = cv_coeff
@@ -64,10 +64,10 @@ def InfidelityUPsi(
     dtype: Optional[DType] = None,
 ):
 
-    logpsiU_apply_fun = nkjax.HashablePartial(sample_Ustate, state._apply_fun, U)
+    logpsiU= nkjax.HashablePartial(_logpsi_U, state._apply_fun, U)
     target = MCState(
         sampler=state.sampler,
-        apply_fun=logpsiU_apply_fun,
+        apply_fun=logpsiU,
         n_samples=state.n_samples,
         variables=state.variables,
     )

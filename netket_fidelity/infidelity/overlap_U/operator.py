@@ -23,10 +23,10 @@ class InfidelityOperatorUPsi(AbstractOperator):
         if not isinstance(state, VariationalState):
             raise TypeError("The first argument should be a variational state.")
 
-        if not is_unitary:
+        if not is_unitary and not isinstance(state, ExactState):
             raise ValueError(
                 "Only works with unitary gates. If the gate is non unitary"
-                "then you must sample from it. Use a different operator."
+                " then you must sample from it. Use a different operator."
             )
 
         if cv_coeff is not None:
@@ -36,7 +36,7 @@ class InfidelityOperatorUPsi(AbstractOperator):
                 raise TypeError("`cv_coeff` should be a real scalar number or None.")
 
             if isinstance(state, ExactState):
-                raise ValueError("With ExactState the control variate should be None")
+                cv_coeff = None
 
         self._target = state
         self._cv_coeff = cv_coeff

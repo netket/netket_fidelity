@@ -1,4 +1,4 @@
-from .qubit_rotations import Rx, Ry
+from .singlequbit_gates import Rx, Ry, Hadamard
 from .ising import Ising
 
 

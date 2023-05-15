@@ -5,17 +5,6 @@ import jax.numpy as jnp
 
 import netket as nk
 
-
-def expval(par, vstate, H, real=False):
-    vstate.parameters = par
-    psi = vstate.to_array()
-    expval = psi.conj() @ (H @ psi)
-    if real:
-        expval = np.real(expval)
-
-    return expval
-
-
 def central_diff_grad(func, x, eps, *args, dtype=None):
     if dtype is None:
         dtype = x.dtype
