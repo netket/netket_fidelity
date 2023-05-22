@@ -151,7 +151,7 @@ def get_conns_and_mels_Ry(sigma, idx, angle):
 
 
 @nk.vqs.get_local_kernel_arguments.dispatch
-def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: Ry):
+def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: Ry):  # noqa: F811
     sigma = vstate.samples
     conns, mels = get_conns_and_mels_Ry(
         sigma.reshape(-1, vstate.hilbert.size), op.idx, op.angle
@@ -228,7 +228,7 @@ def get_conns_and_mels_Hadamard(sigma, idx):
 
 
 @nk.vqs.get_local_kernel_arguments.dispatch
-def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: Hadamard):
+def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: Hadamard):  # noqa: F811
     sigma = vstate.samples
     conns, mels = get_conns_and_mels_Hadamard(
         sigma.reshape(-1, vstate.hilbert.size),

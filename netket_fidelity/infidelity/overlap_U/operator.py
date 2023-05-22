@@ -4,7 +4,15 @@ import jax.numpy as jnp
 from netket.operator import AbstractOperator
 from netket.utils.types import DType
 from netket.utils.numbers import is_scalar
-from netket.vqs import VariationalState, ExactState
+from netket.vqs import VariationalState
+
+# support future netket
+import netket
+
+if hasattr(netket.vqs, "FullSumState"):
+    from netket.vqs import FullSumState
+else:
+    from netket.vqs import ExactState as FullSumState
 
 
 class InfidelityOperatorUPsi(AbstractOperator):
@@ -23,7 +31,7 @@ class InfidelityOperatorUPsi(AbstractOperator):
         if not isinstance(state, VariationalState):
             raise TypeError("The first argument should be a variational state.")
 
-        if not is_unitary and not isinstance(state, ExactState):
+        if not is_unitary and not isinstance(state, FullSumState):
             raise ValueError(
                 "Only works with unitary gates. If the gate is non unitary"
                 " then you must sample from it. Use a different operator."
@@ -35,7 +43,7 @@ class InfidelityOperatorUPsi(AbstractOperator):
             if (not is_scalar(cv_coeff)) or jnp.iscomplex(cv_coeff):
                 raise TypeError("`cv_coeff` should be a real scalar number or None.")
 
-            if isinstance(state, ExactState):
+            if isinstance(state, FullSumState):
                 cv_coeff = None
 
         self._target = state

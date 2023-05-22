@@ -39,7 +39,7 @@ I_op = nkf.infidelity.InfidelityOperator(phi, U=U, U_dagger=U, is_unitary=True, 
 
 # Create the driver
 optimizer = nk.optimizer.Sgd(learning_rate=0.01)
-te =  nkf.driver.infidelity_optimizer.InfidelityOptimizer(phi, U, psi, optimizer, U_dagger=U, is_unitary=True, cv_coeff=-0.5)
+te =  nkf.driver.infidelity_optimizer.InfidelityOptimizer(phi, optimizer, U=U, U_dagger=U, variational_state=psi, is_unitary=True, cv_coeff=-0.5)
 
 # Run the driver
 te.run(n_iter=100)

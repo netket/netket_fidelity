@@ -3,9 +3,17 @@ import jax
 
 from netket import jax as nkjax
 from netket.utils.dispatch import TrueT
-from netket.vqs import ExactState, expect, expect_and_grad
+from netket.vqs import expect, expect_and_grad
 from netket.utils import mpi
 from netket.stats import Stats
+
+# support future netket
+import netket
+
+if hasattr(netket.vqs, "FullSumState"):
+    from netket.vqs import FullSumState
+else:
+    from netket.vqs import ExactState as FullSumState
 
 from .operator import InfidelityOperatorUPsi
 
@@ -15,13 +23,13 @@ def sparsify(U):
 
 
 @expect.dispatch
-def infidelity(vstate: ExactState, op: InfidelityOperatorUPsi):
+def infidelity(vstate: FullSumState, op: InfidelityOperatorUPsi):
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")
-    if not isinstance(op.target, ExactState):
+    if not isinstance(op.target, FullSumState):
         raise TypeError("Can only compute infidelity of exact states.")
 
-    return infidelity_sampling_ExactState(
+    return infidelity_sampling_FullSumState(
         vstate._apply_fun,
         vstate.parameters,
         vstate.model_state,
@@ -33,8 +41,8 @@ def infidelity(vstate: ExactState, op: InfidelityOperatorUPsi):
 
 
 @expect_and_grad.dispatch
-def infidelity(
-    vstate: ExactState,
+def infidelity(  # noqa: F811
+    vstate: FullSumState,
     op: InfidelityOperatorUPsi,
     use_covariance: TrueT,
     *,
@@ -42,10 +50,10 @@ def infidelity(
 ):
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")
-    if not isinstance(op.target, ExactState):
+    if not isinstance(op.target, FullSumState):
         raise TypeError("Can only compute infidelity of exact states.")
 
-    return infidelity_sampling_ExactState(
+    return infidelity_sampling_FullSumState(
         vstate._apply_fun,
         vstate.parameters,
         vstate.model_state,
@@ -56,7 +64,7 @@ def infidelity(
     )
 
 
-def infidelity_sampling_ExactState(
+def infidelity_sampling_FullSumState(
     afun,
     params,
     model_state,

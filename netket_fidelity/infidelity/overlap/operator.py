@@ -5,7 +5,16 @@ from netket import jax as nkjax
 from netket.operator import AbstractOperator
 from netket.utils.types import DType
 from netket.utils.numbers import is_scalar
-from netket.vqs import VariationalState, ExactState, MCState
+from netket.vqs import VariationalState, MCState
+
+# support future netket
+import netket
+
+if hasattr(netket.vqs, "FullSumState"):
+    from netket.vqs import FullSumState
+else:
+    from netket.vqs import ExactState as FullSumState
+
 
 from netket_fidelity.utils.sampling_Ustate import _logpsi_U
 
@@ -29,7 +38,7 @@ class InfidelityOperatorStandard(AbstractOperator):
             if (not is_scalar(cv_coeff)) or jnp.iscomplex(cv_coeff):
                 raise TypeError("`cv_coeff` should be a real scalar number or None.")
 
-            if isinstance(target, ExactState):
+            if isinstance(target, FullSumState):
                 cv_coeff = None
 
         self._target = target

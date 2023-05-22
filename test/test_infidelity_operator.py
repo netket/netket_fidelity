@@ -101,7 +101,7 @@ def test_MCState(sample_Upsi, is_identity):
 
 @pytest.mark.parametrize("sample_Upsi", [False, True])
 @pytest.mark.parametrize("is_identity", [False, True])
-def test_ExactState(sample_Upsi, is_identity):
+def test_FullSumState(sample_Upsi, is_identity):
     vs_t, vs, vs_exact_t, vs_exact, _U, _U_dag = _setup()
 
     if is_identity is False:

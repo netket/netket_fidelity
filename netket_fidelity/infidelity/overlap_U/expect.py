@@ -42,7 +42,7 @@ def infidelity(vstate: MCState, op: InfidelityOperatorUPsi):
 
 
 @expect_and_grad.dispatch
-def infidelity(
+def infidelity(  # noqa: F811
     vstate: MCState,
     op: InfidelityOperatorUPsi,
     use_covariance: TrueT,

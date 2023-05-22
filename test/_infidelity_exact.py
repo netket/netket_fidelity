@@ -1,5 +1,4 @@
 import jax.numpy as jnp
-import netket as nk
 
 
 def _infidelity_exact(params_new, vstate, U):
@@ -10,12 +9,12 @@ def _infidelity_exact(params_new, vstate, U):
     state_new = vstate.to_array()
     vstate.parameters = params_old
 
-    if U is None:      
-        return 1 - jnp.absolute(state_new.conj().T @ state_old)**2 / (
+    if U is None:
+        return 1 - jnp.absolute(state_new.conj().T @ state_old) ** 2 / (
             (state_new.conj().T @ state_new) * (state_old.conj().T @ state_old)
         )
-  
-    else: 
-        return 1 - jnp.absolute(state_new.conj().T @ U.to_sparse() @ state_old)**2 / (
+
+    else:
+        return 1 - jnp.absolute(state_new.conj().T @ U.to_sparse() @ state_old) ** 2 / (
             (state_new.conj().T @ state_new) * (state_old.conj().T @ state_old)
         )

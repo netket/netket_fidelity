@@ -1,9 +1,9 @@
 import numpy as np
 
-import jax
 import jax.numpy as jnp
 
 import netket as nk
+
 
 def central_diff_grad(func, x, eps, *args, dtype=None):
     if dtype is None:

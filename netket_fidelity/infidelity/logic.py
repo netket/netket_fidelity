@@ -1,8 +1,15 @@
 from typing import Optional
 
 from netket.operator import AbstractOperator, Adjoint
-from netket.vqs import VariationalState, ExactState
+from netket.vqs import VariationalState
 from netket.utils.types import DType
+
+import netket
+
+if hasattr(netket.vqs, "FullSumState"):
+    from netket.vqs import FullSumState
+else:
+    from netket.vqs import ExactState as FullSumState
 
 from .overlap import InfidelityOperatorStandard, InfidelityUPsi
 from .overlap_U import InfidelityOperatorUPsi
@@ -120,7 +127,7 @@ def InfidelityOperator(
                 "use operators coming from `netket_fidelity`."
             )
 
-        if isinstance(target, ExactState):
+        if isinstance(target, FullSumState):
             return InfidelityOperatorUPsi(
                 U,
                 target,

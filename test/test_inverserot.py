@@ -1,9 +1,6 @@
-import pytest
-from pytest import approx
 import netket as nk
 import jax.numpy as jnp
 import numpy as np
-import scipy
 
 import netket_fidelity as nkf
 

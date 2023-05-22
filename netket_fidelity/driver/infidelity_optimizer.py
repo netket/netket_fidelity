@@ -1,47 +1,139 @@
+from typing import Optional
 from netket.stats import Stats
 
 from netket.driver.abstract_variational_driver import AbstractVariationalDriver
 
-from .infidelity_optimizer_common import info
+from netket.optimizer import (
+    identity_preconditioner,
+    PreconditionerT,
+)
+
 from netket_fidelity.infidelity import InfidelityOperator
+
+from .infidelity_optimizer_common import info
 
 
 class InfidelityOptimizer(AbstractVariationalDriver):
     def __init__(
         self,
         target_state,
-        U,
-        vstate,
         optimizer,
+        *,
+        variational_state,
+        U=None,
         U_dagger=None,
-        sr=None,
+        preconditioner: PreconditionerT = identity_preconditioner,
         is_unitary=False,
-        cv_coeff=None,
+        cv_coeff=-0.5,
     ):
-        super().__init__(vstate, optimizer, minimized_quantity_name="Infidelity")
+        r"""
+        Constructs a driver training the state to match the target state.
 
-        self.sr = sr
+        The target state is either `math`:\ket{\psi}` or `math`:\hat{U}\ket{\psi}`
+        depending on the provided inputs.
+
+        Operator I_op computing the infidelity I among two variational states |ψ⟩ and |Φ⟩ as:
+
+        .. math::
+
+            I = 1 - |⟨ψ|Φ⟩|^2 / ⟨ψ|ψ⟩ ⟨Φ|Φ⟩ = 1 - ⟨ψ|I_op|ψ⟩ / ⟨ψ|ψ⟩
+
+        where:
+
+         .. math::
+
+            I_op = |Φ⟩⟨Φ| / ⟨Φ|Φ⟩
+
+        The state |Φ⟩ can be an autonomous state |Φ⟩ =|ϕ⟩ or an operator U applied to it, namely
+        |Φ⟩  = U|ϕ⟩. I_op is defined by the state |ϕ⟩ (called target) and, possibly, by the operator U.
+        If U is not passed, it is assumed |Φ⟩ =|ϕ⟩.
+
+        The Monte Carlo estimator of I is:
+
+        ..math::
+
+            I = \mathbb{E}_{χ}[ I_loc(σ,η) ] = \mathbb{E}_{χ}[ ⟨σ|Φ⟩ ⟨η|ψ⟩ / ⟨σ|ψ⟩ ⟨η|Φ⟩ ]
+
+        where χ(σ, η) = |Ψ(σ)|^2 |Φ(η)|^2 / ⟨ψ|ψ⟩ ⟨Φ|Φ⟩. In practice, since I is a real quantity, Re{I_loc(σ,η)}
+        is used. This estimator can be utilized both when |Φ⟩ =|ϕ⟩ and when |Φ⟩ = U|ϕ⟩, with U a (unitary or
+        non-unitary) operator. In the second case, we have to sample from U|ϕ⟩ and this is implemented in
+        the function :ref:`jax.:ref:`InfidelityUPsi`. This works only with the operators provdided in the package.
+        We remark that sampling from U|ϕ⟩ requires to compute connected elements of U and so is more expensive
+        than sampling from an autonomous state. The choice of this estimator is specified by passing
+        `sample_Upsi=True`, while the flag argument `is_unitary` indicates whether U is unitary or not.
+
+        If U is unitary, the following alternative estimator can be used:
+
+        ..math::
+
+            I = \mathbb{E}_{χ'}[ I_loc(σ,η) ] = \mathbb{E}_{χ}[ ⟨σ|U|ϕ⟩ ⟨η|ψ⟩ / ⟨σ|U^{\dagger}|ψ⟩ ⟨η|ϕ⟩ ].
+
+        where χ'(σ, η) = |Ψ(σ)|^2 |ϕ(η)|^2 / ⟨ψ|ψ⟩ ⟨ϕ|ϕ⟩. This estimator is more efficient since it does not
+        require to sample from U|ϕ⟩, but only from |ϕ⟩. This choice of the estimator is the default and it works only
+        with `is_unitary==True` (besides `sample_Upsi=False`). When |Φ⟩ = |ϕ⟩ the two estimators coincides.
+
+        To reduce the variance of the estimator, the Control Variates (CV) method can be applied. This consists
+        in modifying the estimator into:
+
+        ..math::
+
+            I_loc^{CV} = Re{I_loc(σ,η)} - c (|1 - I_loc(σ,η)^2| - 1)
+
+        where c ∈ \mathbb{R}. The constant c is chosen to minimize the variance of I_loc^{CV} as:
+
+        ..math::
+
+            c* = Cov_{χ}[ |1-I_loc|^2, Re{1-I_loc}] / Var_{χ}[ |1-I_loc|^2 ],
+
+        where Cov[..., ...] indicates the covariance and Var[...] the variance. In the relevant limit
+        |Ψ⟩ →|Φ⟩, we have c*→-1/2. The value -1/2 is adopted as default value for c in the infidelity
+        estimator. To not apply CV, set c=0.
+
+        Args:
+            target_state: target variational state |ϕ⟩.
+            optimizer: the optimizer to use to use (from optax)
+            variational_state: the variational state to train
+            U: operator U.
+            U_dagger: dagger operator U^{\dagger}.
+            cv_coeff: Control Variates coefficient c.
+            is_unitary: flag specifiying the unitarity of U. If True with `sample_Upsi=False`, the second estimator is used.
+            dtype: The dtype of the output of expectation value and gradient.
+            sample_Upsi: flag specifiying whether to sample from |ϕ⟩ or from U|ϕ⟩. If False with `is_unitary=False`, an error occurs.
+            preconditioner: Determines which preconditioner to use for the loss gradient.
+                This must be a tuple of `(object, solver)` as documented in the section
+                `preconditioners` in the documentation. The standard preconditioner
+                included with NetKet is Stochastic Reconfiguration. By default, no
+                preconditioner is used and the bare gradient is passed to the optimizer.
+        """
+        super().__init__(
+            variational_state, optimizer, minimized_quantity_name="Infidelity"
+        )
+
+        self._cv = cv_coeff
+
+        self.preconditioner = preconditioner
+
         self._I_op = InfidelityOperator(
-            target_state, U=U, U_dagger=U, is_unitary=True, cv_coeff=-1 / 2
+            target_state, U=U, U_dagger=U, is_unitary=True, cv_coeff=cv_coeff
         )
 
     def _forward_and_backward(self):
         self.state.reset()
         self._I_op.target.reset()
 
-        I_stats, I_grad = self.state.expect_and_grad(self._I_op)
+        self._loss_stats, self._loss_grad = self.state.expect_and_grad(self._I_op)
 
-        # TODO
-        self._loss_stats = I_stats
-        self._loss_grad = I_grad
-
-        if self.sr is not None:
-            self._S = self.state.quantum_geometric_tensor(self.sr)
-            self._dp = self._S(self._loss_grad)
-        else:
-            self._dp = self._loss_grad
+        # if it's the identity it does
+        self._dp = self.preconditioner(self.state, self._loss_grad, self.step_count)
 
         return self._dp
+
+    @property
+    def cv(self) -> Optional[float]:
+        """
+        Return the coefficient for the Control Variates
+        """
+        return self._cv
 
     @property
     def infidelity(self) -> Stats:
@@ -50,6 +142,36 @@ class InfidelityOptimizer(AbstractVariationalDriver):
         current state of the driver.
         """
         return self._loss_stats
+
+    @property
+    def preconditioner(self):
+        """
+        The preconditioner used to modify the gradient.
+
+        This is a function with the following signature
+
+        .. code-block:: python
+
+            precondtioner(vstate: VariationalState,
+                          grad: PyTree,
+                          step: Optional[Scalar] = None)
+
+        Where the first argument is a variational state, the second argument
+        is the PyTree of the gradient to precondition and the last optional
+        argument is the step, used to change some parameters along the
+        optimisation.
+
+        Often, this is taken to be :func:`nk.optimizer.SR`. If it is set to
+        `None`, then the identity is used.
+        """
+        return self._preconditioner
+
+    @preconditioner.setter
+    def preconditioner(self, val: Optional[PreconditionerT]):
+        if val is None:
+            val = identity_preconditioner
+
+        self._preconditioner = val
 
     def __repr__(self):
         return (
@@ -69,6 +191,3 @@ class InfidelityOptimizer(AbstractVariationalDriver):
             ]
         ]
         return "\n{}".format(" " * 3 * (depth + 1)).join([str(self)] + lines)
-
-    def info(self):
-        pass
