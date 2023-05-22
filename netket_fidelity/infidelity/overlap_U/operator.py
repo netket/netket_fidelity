@@ -1,6 +1,6 @@
 from typing import Optional
 import jax.numpy as jnp
-import jax
+
 from netket.operator import AbstractOperator
 from netket.utils.types import DType
 from netket.utils.numbers import is_scalar

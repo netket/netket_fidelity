@@ -1,13 +1,9 @@
-from typing import Optional
 from functools import partial
 
 import jax.numpy as jnp
 import jax
 
-from netket.operator import AbstractOperator
-from netket.utils.types import DType
 from netket.utils.dispatch import TrueT
-from netket.utils.numbers import is_scalar
 from netket.vqs import MCState, expect, expect_and_grad
 from netket import jax as nkjax
 from netket.utils import mpi

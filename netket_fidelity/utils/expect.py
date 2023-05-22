@@ -111,7 +111,6 @@ def _expect_bwd_fid(n_chains, log_pdf_new, log_pdf_old, expected_fun, residuals,
 _expect_2distr.defvjp(_expect_fwd_fid, _expect_bwd_fid)
 
 
-
 def expect_onedistr(
     log_pdf: Callable[[PyTree, jnp.ndarray], jnp.ndarray],
     expected_fun: Callable[[PyTree, jnp.ndarray], jnp.ndarray],
@@ -127,8 +126,9 @@ def expect_onedistr(
         log_pdf:
         expected_ffun
     """
-    return _expect_onedistr(n_chains, log_pdf, expected_fun, pars, σ, *expected_fun_args)
-
+    return _expect_onedistr(
+        n_chains, log_pdf, expected_fun, pars, σ, *expected_fun_args
+    )
 
 
 @partial(jax.custom_vjp, nondiff_argnums=(0, 1, 2))
@@ -174,9 +174,9 @@ def _expect_onedistr_bwd(n_chains, log_pdf, expected_fun, residuals, dout):
         return out
 
     _, pb = nkvjp(f, pars, σ, *cost_args)
-    
+
     grad_f = pb(dL̄)
-    
+
     return grad_f
 
 

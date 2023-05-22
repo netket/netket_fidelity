@@ -1,6 +1,6 @@
 from typing import Optional
 import jax.numpy as jnp
-import jax
+
 from netket import jax as nkjax
 from netket.operator import AbstractOperator
 from netket.utils.types import DType
@@ -64,7 +64,7 @@ def InfidelityUPsi(
     dtype: Optional[DType] = None,
 ):
 
-    logpsiU= nkjax.HashablePartial(_logpsi_U, state._apply_fun, U)
+    logpsiU = nkjax.HashablePartial(_logpsi_U, state._apply_fun, U)
     target = MCState(
         sampler=state.sampler,
         apply_fun=logpsiU,

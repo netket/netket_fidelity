@@ -231,7 +231,8 @@ def get_conns_and_mels_Hadamard(sigma, idx):
 def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: Hadamard):
     sigma = vstate.samples
     conns, mels = get_conns_and_mels_Hadamard(
-        sigma.reshape(-1, vstate.hilbert.size), op.idx, op.angle
+        sigma.reshape(-1, vstate.hilbert.size),
+        op.idx,
     )
 
     conns = conns.reshape((sigma.shape[0], sigma.shape[1], -1, vstate.hilbert.size))

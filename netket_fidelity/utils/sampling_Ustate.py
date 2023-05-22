@@ -6,4 +6,3 @@ def _logpsi_U(apply_fun, U, variables, x):
     logpsi_xp = apply_fun(variables, xp)
 
     return jax.scipy.special.logsumexp(logpsi_xp, axis=-1, b=mels)
-

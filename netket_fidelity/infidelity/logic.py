@@ -120,15 +120,15 @@ def InfidelityOperator(
                 "use operators coming from `netket_fidelity`."
             )
 
-        if isinstance(target, ExactState): 
+        if isinstance(target, ExactState):
             return InfidelityOperatorUPsi(
                 U,
                 target,
                 U_dagger=U_dagger,
                 cv_coeff=cv_coeff,
                 dtype=dtype,
-                )
-        
+            )
+
         if not is_unitary and not sample_Upsi:
             raise ValueError(
                 "Non-unitary operators can only be handled by sampling from the state U|ψ⟩. "
