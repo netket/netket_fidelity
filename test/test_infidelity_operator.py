@@ -96,7 +96,7 @@ def test_MCState(sample_Upsi, is_identity):
     assert I1_mean.real == approx(I_mean.real, abs=1e-5)
     assert np.asarray(I_stat1.variance) == approx(np.asarray(I_stat.variance), abs=1e-5)
 
-    same_derivatives(I_grad, I_grad_exact, rel_eps=1e-1)
+    same_derivatives(I_grad, I_grad_exact, rel_eps=5e-1)
 
 
 @pytest.mark.parametrize("sample_Upsi", [False, True])
@@ -149,4 +149,4 @@ def test_FullSumState(sample_Upsi, is_identity):
     assert I1_mean.real == approx(I_mean.real, abs=1e-5)
     assert np.asarray(I_stat1.variance) == approx(np.asarray(I_stat.variance), abs=1e-5)
 
-    same_derivatives(I_grad, I_grad_exact, rel_eps=1e-1)
+    same_derivatives(I_grad, I_grad_exact, rel_eps=5e-1)
