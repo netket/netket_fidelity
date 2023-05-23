@@ -19,9 +19,24 @@ In addition, the code includes the possibility to use the Control Variates (CV) 
     - **examples**: folder containing some examples of application. 
 - **test**: folder containing tests for the infidelity stochastic estimation and for the `jax`-compatible rotation operators.
 
+## Installation
+
+This package is not registered on PyPi, so to install it you can install it directly from github by running the following line:
+
+```bash
+pip install git+https://github.com/netket/netket_fidelity
+```
+
+or by cloning the repository and installing it manually in editable mode
+
+```bash
+git clone https://github.com/netket/netket_fidelity
+pip install -e ./netket_fidelity
+```
+ 
 ## Example of usage
 
-```
+```python
 import netket as nk
 import netket_fidelity as nkf
 
