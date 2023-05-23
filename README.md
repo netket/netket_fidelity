@@ -1,4 +1,5 @@
 # projected time-dependent Variational Monte Carlo (p-tVMC)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7958760.svg)](https://doi.org/10.5281/zenodo.7958760)
 
 This is a package for the projected time-dependent Variational Monte Carlo (p-tVMC) method based on infidelity optimization for variational simulation of quantum dynamics. 
 See the paper "Unbiasing time-dependent Variational Monte Carlo with projected quantum evolution" for reference. 
@@ -15,8 +16,8 @@ In addition, the code includes the possibility to use the Control Variates (CV) 
     - **infidelity**: contains the infidelity operator. 
     - **operator**: contains the `jax`-compatible operators for U.
     - **driver**: contains the driver for infidelity optimization. 
+    - **examples**: folder containing some examples of application. 
 - **test**: folder containing tests for the infidelity stochastic estimation and for the `jax`-compatible rotation operators.
-- **Examples**: folder containing some examples of application. 
 
 ## Example of usage
 

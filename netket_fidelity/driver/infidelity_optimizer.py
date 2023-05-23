@@ -111,10 +111,10 @@ class InfidelityOptimizer(AbstractVariationalDriver):
 
         self._cv = cv_coeff
 
-        self.preconditioner = preconditioner
+        self._preconditioner = preconditioner
 
         self._I_op = InfidelityOperator(
-            target_state, U=U, U_dagger=U, is_unitary=True, cv_coeff=cv_coeff
+            target_state, U=U, U_dagger=U_dagger, is_unitary=is_unitary, cv_coeff=cv_coeff
         )
 
     def _forward_and_backward(self):
