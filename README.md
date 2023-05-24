@@ -16,7 +16,7 @@ In addition, the code includes the possibility to use the Control Variates (CV) 
     - **infidelity**: contains the infidelity operator. 
     - **operator**: contains the `jax`-compatible operators for U.
     - **driver**: contains the driver for infidelity optimization. 
-    - **examples**: folder containing some examples of application. 
+- **examples**: folder containing some examples of application. 
 - **test**: folder containing tests for the infidelity stochastic estimation and for the `jax`-compatible rotation operators.
 
 ## Installation

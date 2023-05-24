@@ -5,7 +5,7 @@ import scipy
 import matplotlib.pyplot as plt
 import flax
 
-from netket_fidelity.examples.onespin.onespin_ansatz import BlochSphere_1spin
+from onespin_ansatz import BlochSphere_1spin
 
 # Set the parameters 
 N = 1 
@@ -43,7 +43,17 @@ lr = 0.01
 optimizer = nk.optimizer.Adam(learning_rate=lr)
 
 # Create the p-tVMC driver
-te =  nkf.driver.ptvmc.ptvmc(phi, U, psi, optimizer, tf, dt, n_iter, obs=obs, U_dagger=U_dagger, is_unitary=True, cv_coeff=-0.5)
+te_ptvmc =  nkf.driver.ptvmc.ptvmc(phi, U, psi, optimizer, tf, dt, n_iter, obs=obs, U_dagger=U_dagger, is_unitary=True, cv_coeff=-0.5)
 
 # Run the driver 
-te.run()
+te_ptvmc.run()
+
+# Plot the results 
+fig = plt.figure(figsize=(8, 8))
+plt.errorbar(ts, te_ptvmc._te.obs_dict['obs'].mean, te_ptvmc._te.obs_dict['obs'].error_of_mean)
+plt.xlabel(r"Time $t$")
+plt.ylabel(r"$\langle \sigma^z \rangle$")
+plt.legend()
+plt.tight_layout()
+plt.savefig("onespin_rotation.pdf", bbox_inches='tight')
+plt.show()

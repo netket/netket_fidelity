@@ -1,7 +1,6 @@
 import netket as nk
 import netket_fidelity as nkf
 import jax.numpy as jnp
-import scipy
 import matplotlib.pyplot as plt
 import flax
 
@@ -99,3 +98,13 @@ def Trotter_adiabatic(phi, optimizer, psi, γ, Γ, ts, n_iter, obs=None):
     
 # Run the evolution 
 psi, obs_dict = Trotter_adiabatic(phi, optimizer, psi, γ, Γ, ts, n_iter=n_iter, obs=obs)
+
+# Plot the results 
+fig = plt.figure(figsize=(8, 8))
+plt.errorbar(ts, obs_dict['obs'].mean, obs_dict['obs'].error_of_mean)
+plt.xlabel(r"Time $t$")
+plt.ylabel(r"$\langle \sigma_i^z \rangle$")
+plt.legend()
+plt.tight_layout()
+plt.savefig("adiabatic_sweeping.pdf", bbox_inches='tight')
+plt.show()

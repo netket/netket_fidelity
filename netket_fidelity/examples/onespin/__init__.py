@@ -1,1 +1,0 @@
-from . import onespin_ansatz

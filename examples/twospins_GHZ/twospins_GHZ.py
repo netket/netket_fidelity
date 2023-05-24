@@ -5,8 +5,8 @@ import scipy
 import matplotlib.pyplot as plt
 import flax
 
-from netket_fidelity.examples.twospins_GHZ.GHZ_state import GHZ
-from netket_fidelity.examples.twospins_GHZ.RBM_Jastrow_ansatz import RBM_Jastrow
+from GHZ_state import GHZ
+from RBM_Jastrow_ansatz import RBM_Jastrow
 
 # Set the parameters 
 N = 2 
@@ -91,3 +91,13 @@ def Trotter_Ising(phi, optimizer, psi, Uxs, Uxs_dagger, J, ts, n_iter, obs=None)
         return psi
 # Run the evolution 
 psi, obs_dict = Trotter_Ising(phi, optimizer, psi, Uxs, Uxs_dagger, J, ts, n_iter=n_iter, obs=obs)
+
+# Plot the results 
+fig = plt.figure(figsize=(8, 8))
+plt.errorbar(ts, obs_dict['obs'].mean, obs_dict['obs'].error_of_mean)
+plt.xlabel(r"Time $t$")
+plt.ylabel(r"$\langle \sigma_1^z \sigma_2^z \rangle$")
+plt.legend()
+plt.tight_layout()
+plt.savefig("twospins_GHZ.pdf", bbox_inches='tight')
+plt.show()
