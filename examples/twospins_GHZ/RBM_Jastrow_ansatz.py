@@ -8,6 +8,7 @@ from flax.linen.dtypes import promote_dtype
 
 default_kernel_init = nn.initializers.normal(stddev=0.01)
 
+
 class RBM_Jastrow(nn.Module):
     r"""A restricted boltzman Machine, equivalent to a 2-layer FFNN with a
     nonlinear activation function in between.
@@ -60,13 +61,12 @@ class RBM_Jastrow(nn.Module):
         else:
             out_RBM = x
 
-        theta_zz = self.param("theta_zz", nn.initializers.zeros, (N, N), self.param_dtype)
+        theta_zz = self.param(
+            "theta_zz", nn.initializers.zeros, (N, N), self.param_dtype
+        )
 
         theta_zz = theta_zz + theta_zz.T
         theta_zz, x_in = promote_dtype(theta_zz, input, dtype=None)
         out_Jas_zz = jnp.einsum("...i,ij,...j", x_in, theta_zz, x_in)
-        
+
         return out_RBM + 1j * out_Jas_zz
-
-
-
