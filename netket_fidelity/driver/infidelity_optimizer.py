@@ -2,6 +2,7 @@ from typing import Optional
 from netket.stats import Stats
 
 from netket.driver.abstract_variational_driver import AbstractVariationalDriver
+from netket.callbacks import ConvergenceStopping
 
 from netket.optimizer import (
     identity_preconditioner,
@@ -11,6 +12,20 @@ from netket.optimizer import (
 from netket_fidelity.infidelity import InfidelityOperator
 
 from .infidelity_optimizer_common import info
+
+
+def _to_tuple(maybe_iterable):
+    """
+    _to_tuple(maybe_iterable)
+
+    Ensure the result is iterable. If the input is not iterable, it is wrapped into a tuple.
+    """
+    if hasattr(maybe_iterable, "__iter__"):
+        surely_iterable = tuple(maybe_iterable)
+    else:
+        surely_iterable = (maybe_iterable,)
+
+    return surely_iterable
 
 
 class InfidelityOptimizer(AbstractVariationalDriver):
@@ -131,6 +146,43 @@ class InfidelityOptimizer(AbstractVariationalDriver):
         self._dp = self.preconditioner(self.state, self._loss_grad, self.step_count)
 
         return self._dp
+
+    def run(
+        self,
+        n_iter,
+        out=None,
+        *args,
+        target_infidelity=None,
+        callback=lambda *x: True,
+        **kwargs,
+    ):
+        """
+        Executes the Infidelity optimisation, updating the weights of the network
+        stored in this driver for `n_iter` steps and dumping values of the observables `obs`
+        in the output `logger`. If no logger is specified, creates a json file at `out`,
+        overwriting files with the same prefix.
+
+        Args:
+            n_iter: the total number of iterations
+            out: A logger object, or an iterable of loggers, to be used to store simulation log and data.
+            obs: An iterable containing all observables that should be computed
+            target_infidelity: An optional floating point number that specifies when to stop the optimisation.
+                This is used to construct a {class}`netket.callbacks.ConvergenceStopping` callback that stops
+                the optimisation when that value is reached. You can also build that object manually for more
+                control on the stopping criteria.
+            step_size: Every how many steps should observables be logged to disk (default=1)
+            show_progress: If true displays a progress bar (default=True)
+            callback: Callable or list of callable callback functions to stop training given a condition
+        """
+        callbacks = _to_tuple(callback)
+
+        if target_infidelity is not None:
+            cb = ConvergenceStopping(
+                target_infidelity, smoothing_window=20, patience=30
+            )
+            callbacks = callbacks + (cb,)
+
+        super().run(n_iter, out, *args, callback=callbacks, **kwargs)
 
     @property
     def cv(self) -> Optional[float]:
