@@ -1,14 +1,14 @@
 from functools import partial
 
-import jax.numpy as jnp
 import jax
+import jax.numpy as jnp
 from jax.scipy.special import logsumexp
 
-from netket.utils.dispatch import TrueT
-from netket.vqs import MCState, expect, expect_and_grad
 from netket import jax as nkjax
+from netket.operator import DiscreteJaxOperator
+from netket.vqs import MCState, expect, expect_and_grad, get_local_kernel_arguments
 from netket.utils import mpi
-import netket as nk
+from netket.utils.dispatch import TrueT
 
 from netket_fidelity.utils import expect_2distr
 
@@ -22,8 +22,8 @@ def infidelity(vstate: MCState, op: InfidelityOperatorUPsi):
 
     print(type(vstate), type(op), type(op.target), type(op._U), type(op._U_dagger))
 
-    sigma, args = nk.vqs.get_local_kernel_arguments(vstate, op._U)
-    sigma_t, args_t = nk.vqs.get_local_kernel_arguments(op.target, op._U_dagger)
+    sigma, args = get_local_kernel_arguments(vstate, op._U)
+    sigma_t, args_t = get_local_kernel_arguments(op.target, op._U_dagger)
 
     return infidelity_sampling_MCState(
         vstate._apply_fun,
@@ -52,8 +52,8 @@ def infidelity(  # noqa: F811
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")
 
-    sigma, args = nk.vqs.get_local_kernel_arguments(vstate, op._U)
-    sigma_t, args_t = nk.vqs.get_local_kernel_arguments(op.target, op._U_dagger)
+    sigma, args = get_local_kernel_arguments(vstate, op._U)
+    sigma_t, args_t = get_local_kernel_arguments(op.target, op._U_dagger)
 
     return infidelity_sampling_MCState(
         vstate._apply_fun,
@@ -93,15 +93,22 @@ def infidelity_sampling_MCState(
     σ = sigma.reshape(-1, N)
     σ_t = sigma_t.reshape(-1, N)
 
-    xp = args[0].reshape(σ.shape[0], -1, N)
-    mels = args[1].reshape(σ.shape[0], -1)
-    xp_t = args_t[0].reshape(σ_t.shape[0], -1, N)
-    mels_t = args_t[1].reshape(σ_t.shape[0], -1)
-
-    n_xp = args[0].shape[-2]
-    n_xp_t = args_t[0].shape[-2]
-
     n_samples = σ.shape[0]
+
+    if isinstance(args, DiscreteJaxOperator):
+        xp, mels = args.get_conn_padded(σ)
+        xp_t, mels_t = args_t.get_conn_padded(σ_t)
+
+        n_xp = args.max_conn_size
+        n_xp_t = args_t.max_conn_size
+    else:
+        xp = args[0].reshape(σ.shape[0], -1, N)
+        mels = args[1].reshape(σ.shape[0], -1)
+        xp_t = args_t[0].reshape(σ_t.shape[0], -1, N)
+        mels_t = args_t[1].reshape(σ_t.shape[0], -1)
+
+        n_xp = args[0].shape[-2]
+        n_xp_t = args_t[0].shape[-2]
 
     xp_splitted = [c.reshape(n_samples, N) for c in jnp.split(xp, n_xp, axis=-2)]
     xp_ravel = jnp.vstack(xp_splitted)

@@ -1,18 +1,35 @@
 from functools import partial
-import jax.numpy as jnp
+
 import numpy as np
+
 import jax
+import jax.numpy as jnp
+
 from jax.tree_util import register_pytree_node_class
-import netket as nk
-from netket.operator import DiscreteOperator
+
+from netket.operator import DiscreteJaxOperator, spin
 
 
 @register_pytree_node_class
-class Rx(DiscreteOperator):
+class Rx(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
         super().__init__(hi)
-        self.idx = idx
-        self.angle = angle / 2
+        self._idx = idx
+        self._angle = angle
+
+    @property
+    def angle(self):
+        """
+        The angle of this rotation.
+        """
+        return self._angle
+
+    @property
+    def idx(self):
+        """
+        The qubit id on which this rotation acts
+        """
+        return self._idx
 
     @property
     def dtype(self):
@@ -20,10 +37,7 @@ class Rx(DiscreteOperator):
 
     @property
     def H(self):
-        return Rx(self.hilbert, self.idx, -self.angle * 2)
-
-    def __hash__(self):
-        return hash(("Rx", self.idx))
+        return Rx(self.hilbert, self.idx, -self.angle)
 
     def __eq__(self, o):
         if isinstance(o, Rx):
@@ -38,6 +52,10 @@ class Rx(DiscreteOperator):
     @classmethod
     def tree_unflatten(cls, aux_data, children):
         return cls(*aux_data)
+
+    @property
+    def max_conn_size(self) -> int:
+        return 2
 
     @jax.jit
     def get_conn_padded(self, x):
@@ -57,6 +75,11 @@ class Rx(DiscreteOperator):
         )
         return xp, mels
 
+    def to_local_operator(self):
+        ctheta = np.cos(self.angle / 2)
+        stheta = np.sin(self.angle / 2)
+        return ctheta - 1j * stheta * spin.sigmax(self.hilbert, self.idx)
+
 
 @partial(jax.vmap, in_axes=(0, None, None), out_axes=(0, 0))
 def get_conns_and_mels_Rx(sigma, idx, angle):
@@ -64,33 +87,34 @@ def get_conns_and_mels_Rx(sigma, idx, angle):
 
     conns = jnp.tile(sigma, (2, 1))
     conns = conns.at[1, idx].set(-conns.at[1, idx].get())
-
+    jax.debug.print("angle={}", angle)
     mels = jnp.zeros(2, dtype=complex)
-    mels = mels.at[0].set(jnp.cos(angle))
-    mels = mels.at[1].set(-1j * jnp.sin(angle))
+    mels = mels.at[0].set(jnp.cos(angle / 2))
+    mels = mels.at[1].set(-1j * jnp.sin(angle / 2))
 
     return conns, mels
 
 
-@nk.vqs.get_local_kernel_arguments.dispatch
-def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: Rx):
-    sigma = vstate.samples
-    conns, mels = get_conns_and_mels_Rx(
-        sigma.reshape(-1, vstate.hilbert.size), op.idx, op.angle
-    )
-
-    conns = conns.reshape((sigma.shape[0], sigma.shape[1], -1, vstate.hilbert.size))
-    mels = mels.reshape((sigma.shape[0], sigma.shape[1], -1))
-
-    return sigma, (conns, mels)
-
-
 @register_pytree_node_class
-class Ry(DiscreteOperator):
+class Ry(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
         super().__init__(hi)
-        self.idx = idx
-        self.angle = angle / 2
+        self._idx = idx
+        self._angle = angle
+
+    @property
+    def angle(self):
+        """
+        The angle of this rotation.
+        """
+        return self._angle
+
+    @property
+    def idx(self):
+        """
+        The qubit id on which this rotation acts
+        """
+        return self._idx
 
     @property
     def dtype(self):
@@ -100,8 +124,9 @@ class Ry(DiscreteOperator):
     def H(self):
         return Ry(self.hilbert, self.idx, -self.angle * 2)
 
-    def __hash__(self):
-        return hash(("Ry", self.idx))
+    @property
+    def max_conn_size(self) -> int:
+        return 2
 
     def __eq__(self, o):
         if isinstance(o, Ry):
@@ -135,6 +160,11 @@ class Ry(DiscreteOperator):
         )
         return xp, mels
 
+    def to_local_operator(self):
+        ctheta = np.cos(self.angle / 2)
+        stheta = np.sin(self.angle / 2)
+        return ctheta + 1j * stheta * spin.sigmay(self.hilbert, self.idx)
+
 
 @partial(jax.vmap, in_axes=(0, None, None), out_axes=(0, 0))
 def get_conns_and_mels_Ry(sigma, idx, angle):
@@ -144,30 +174,26 @@ def get_conns_and_mels_Ry(sigma, idx, angle):
     conns = conns.at[1, idx].set(-conns.at[1, idx].get())
 
     mels = jnp.zeros(2, dtype=complex)
-    mels = mels.at[0].set(jnp.cos(angle))
-    mels = mels.at[1].set((-1) ** ((conns.at[0, idx].get() + 1) / 2) * jnp.sin(angle))
+    mels = mels.at[0].set(jnp.cos(angle / 2))
+    mels = mels.at[1].set(
+        (-1) ** ((conns.at[0, idx].get() + 1) / 2) * jnp.sin(angle / 2)
+    )
 
     return conns, mels
 
 
-@nk.vqs.get_local_kernel_arguments.dispatch
-def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: Ry):  # noqa: F811
-    sigma = vstate.samples
-    conns, mels = get_conns_and_mels_Ry(
-        sigma.reshape(-1, vstate.hilbert.size), op.idx, op.angle
-    )
-
-    conns = conns.reshape((sigma.shape[0], sigma.shape[1], -1, vstate.hilbert.size))
-    mels = mels.reshape((sigma.shape[0], sigma.shape[1], -1))
-
-    return sigma, (conns, mels)
-
-
 @register_pytree_node_class
-class Hadamard(DiscreteOperator):
+class Hadamard(DiscreteJaxOperator):
     def __init__(self, hi, idx):
         super().__init__(hi)
-        self.idx = idx
+        self._idx = idx
+
+    @property
+    def idx(self):
+        """
+        The qubit id on which this hadamard gate acts upon.
+        """
+        return self._idx
 
     @property
     def dtype(self):
@@ -177,8 +203,11 @@ class Hadamard(DiscreteOperator):
     def H(self):
         return Hadamard(self.hilbert, self.idx)
 
-    def __hash__(self):
-        return hash(("Hadamard", self.idx))
+    def to_local_operator(self):
+        sq2 = np.sqrt(2)
+        return (
+            spin.sigmaz(self.hilbert, self.idx) + spin.sigmax(self.hilbert, self.idx)
+        ) / sq2
 
     def __eq__(self, o):
         if isinstance(o, Hadamard):
@@ -194,6 +223,10 @@ class Hadamard(DiscreteOperator):
     def tree_unflatten(cls, aux_data, children):
         return cls(*aux_data)
 
+    @property
+    def max_conn_size(self) -> int:
+        return 2
+
     @jax.jit
     def get_conn_padded(self, x):
         xr = x.reshape(-1, x.shape[-1])
@@ -202,6 +235,7 @@ class Hadamard(DiscreteOperator):
         mels = mels.reshape(x.shape[:-1] + mels.shape[-1:])
         return xp, mels
 
+    @jax.jit
     def get_conn_flattened(self, x, sections):
         xp, mels = self.get_conn_padded(x)
         sections[:] = np.arange(2, mels.size + 2, 2)
@@ -225,17 +259,3 @@ def get_conns_and_mels_Hadamard(sigma, idx):
     mels = mels.at[0].set(((-1) ** ((cons.at[0, idx].get() + 1) / 2)) / jnp.sqrt(2))
 
     return cons, mels
-
-
-@nk.vqs.get_local_kernel_arguments.dispatch
-def get_local_kernel_arguments(vstate: nk.vqs.MCState, op: Hadamard):  # noqa: F811
-    sigma = vstate.samples
-    conns, mels = get_conns_and_mels_Hadamard(
-        sigma.reshape(-1, vstate.hilbert.size),
-        op.idx,
-    )
-
-    conns = conns.reshape((sigma.shape[0], sigma.shape[1], -1, vstate.hilbert.size))
-    mels = mels.reshape((sigma.shape[0], sigma.shape[1], -1))
-
-    return sigma, (conns, mels)
