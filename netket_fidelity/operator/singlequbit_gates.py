@@ -7,15 +7,29 @@ import jax.numpy as jnp
 
 from jax.tree_util import register_pytree_node_class
 
-from netket.operator import DiscreteJaxOperator, spin, PauliStrings
+from netket.operator import DiscreteJaxOperator, spin
 
 
 @register_pytree_node_class
 class Rx(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
         super().__init__(hi)
-        self.idx = idx
-        self.angle = angle
+        self._idx = idx
+        self._angle = angle
+
+    @property
+    def angle(self):
+        """
+        The angle of this rotation.
+        """
+        return self._angle
+
+    @property
+    def idx(self):
+        """
+        The qubit id on which this rotation acts
+        """
+        return self._idx
 
     @property
     def dtype(self):
@@ -85,8 +99,22 @@ def get_conns_and_mels_Rx(sigma, idx, angle):
 class Ry(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
         super().__init__(hi)
-        self.idx = idx
-        self.angle = angle
+        self._idx = idx
+        self._angle = angle
+
+    @property
+    def angle(self):
+        """
+        The angle of this rotation.
+        """
+        return self._angle
+
+    @property
+    def idx(self):
+        """
+        The qubit id on which this rotation acts
+        """
+        return self._idx
 
     @property
     def dtype(self):
@@ -158,7 +186,14 @@ def get_conns_and_mels_Ry(sigma, idx, angle):
 class Hadamard(DiscreteJaxOperator):
     def __init__(self, hi, idx):
         super().__init__(hi)
-        self.idx = idx
+        self._idx = idx
+
+    @property
+    def idx(self):
+        """
+        The qubit id on which this hadamard gate acts upon.
+        """
+        return self._idx
 
     @property
     def dtype(self):
@@ -167,6 +202,12 @@ class Hadamard(DiscreteJaxOperator):
     @property
     def H(self):
         return Hadamard(self.hilbert, self.idx)
+
+    def to_local_operator(self):
+        sq2 = np.sqrt(2)
+        return (
+            spin.sigmaz(self.hilbert, self.idx) + spin.sigmax(self.hilbert, self.idx)
+        ) / sq2
 
     def __eq__(self, o):
         if isinstance(o, Hadamard):
