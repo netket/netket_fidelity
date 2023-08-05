@@ -7,7 +7,7 @@ import jax.numpy as jnp
 
 from jax.tree_util import register_pytree_node_class
 
-from netket.operator import DiscreteJaxOperator
+from netket.operator import DiscreteJaxOperator, spin, PauliStrings
 
 
 @register_pytree_node_class
@@ -15,7 +15,7 @@ class Rx(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
         super().__init__(hi)
         self.idx = idx
-        self.angle = angle / 2
+        self.angle = angle
 
     @property
     def dtype(self):
@@ -23,7 +23,7 @@ class Rx(DiscreteJaxOperator):
 
     @property
     def H(self):
-        return Rx(self.hilbert, self.idx, -self.angle * 2)
+        return Rx(self.hilbert, self.idx, -self.angle)
 
     def __eq__(self, o):
         if isinstance(o, Rx):
@@ -61,6 +61,11 @@ class Rx(DiscreteJaxOperator):
         )
         return xp, mels
 
+    def to_local_operator(self):
+        ctheta = np.cos(self.angle / 2)
+        stheta = np.sin(self.angle / 2)
+        return ctheta - 1j * stheta * spin.sigmax(self.hilbert, self.idx)
+
 
 @partial(jax.vmap, in_axes=(0, None, None), out_axes=(0, 0))
 def get_conns_and_mels_Rx(sigma, idx, angle):
@@ -68,10 +73,10 @@ def get_conns_and_mels_Rx(sigma, idx, angle):
 
     conns = jnp.tile(sigma, (2, 1))
     conns = conns.at[1, idx].set(-conns.at[1, idx].get())
-
+    jax.debug.print("angle={}", angle)
     mels = jnp.zeros(2, dtype=complex)
-    mels = mels.at[0].set(jnp.cos(angle))
-    mels = mels.at[1].set(-1j * jnp.sin(angle))
+    mels = mels.at[0].set(jnp.cos(angle / 2))
+    mels = mels.at[1].set(-1j * jnp.sin(angle / 2))
 
     return conns, mels
 
@@ -81,7 +86,7 @@ class Ry(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
         super().__init__(hi)
         self.idx = idx
-        self.angle = angle / 2
+        self.angle = angle
 
     @property
     def dtype(self):
@@ -127,6 +132,11 @@ class Ry(DiscreteJaxOperator):
         )
         return xp, mels
 
+    def to_local_operator(self):
+        ctheta = np.cos(self.angle / 2)
+        stheta = np.sin(self.angle / 2)
+        return ctheta + 1j * stheta * spin.sigmay(self.hilbert, self.idx)
+
 
 @partial(jax.vmap, in_axes=(0, None, None), out_axes=(0, 0))
 def get_conns_and_mels_Ry(sigma, idx, angle):
@@ -136,8 +146,10 @@ def get_conns_and_mels_Ry(sigma, idx, angle):
     conns = conns.at[1, idx].set(-conns.at[1, idx].get())
 
     mels = jnp.zeros(2, dtype=complex)
-    mels = mels.at[0].set(jnp.cos(angle))
-    mels = mels.at[1].set((-1) ** ((conns.at[0, idx].get() + 1) / 2) * jnp.sin(angle))
+    mels = mels.at[0].set(jnp.cos(angle / 2))
+    mels = mels.at[1].set(
+        (-1) ** ((conns.at[0, idx].get() + 1) / 2) * jnp.sin(angle / 2)
+    )
 
     return conns, mels
 

@@ -3,22 +3,36 @@ from pytest import approx
 import netket as nk
 import numpy as np
 
+from netket.operator import DiscreteJaxOperator
+
 import netket_fidelity as nkf
 
 from ._infidelity_exact import _infidelity_exact
 from ._finite_diff import central_diff_grad, same_derivatives
 
 
+N = 3
+hi = nk.hilbert.Spin(0.5, N)
+
+operators = {}
+
+operators["Identity"] = (None, None)
+
+theta = 0.01
+
+op = nkf.operator.Rx(hi, 0, theta)
+operators["Rx"] = (op, None)
+
+op = nkf.operator.Rx(hi, 0, theta).to_local_operator().to_pauli_strings()
+op_d = nkf.operator.Rx(hi, 0, theta).H.to_local_operator().to_pauli_strings()
+operators["PauliStringNumba"] = (op, op_d)
+operators["PauliStringJax"] = (op.to_jax_operator(), op_d.to_jax_operator())
+
+
 def _setup():
 
-    N = 3
     n_samples = 1e6
     n_discard_per_chain = 1e3
-
-    hi = nk.hilbert.Spin(0.5, N)
-
-    U = nkf.operator.Rx(hi, 0, 0.01)
-    U_dag = nkf.operator.Rx(hi, 0, -0.01)
 
     sa = nk.sampler.MetropolisLocal(hilbert=hi, n_chains_per_rank=16)
     ma = nk.models.RBM(alpha=1)
@@ -45,23 +59,38 @@ def _setup():
         model=ma,
     )
 
-    return vs_t, vs, vs_exact_t, vs_exact, U, U_dag
+    return vs_t, vs, vs_exact_t, vs_exact
 
 
-@pytest.mark.parametrize("sample_Upsi", [False, True])
-@pytest.mark.parametrize("is_identity", [False, True])
-def test_MCState(sample_Upsi, is_identity):
-    vs_t, vs, vs_exact_t, vs_exact, _U, _U_dag = _setup()
+@pytest.mark.parametrize(
+    "sample_Upsi",
+    [
+        pytest.param(False, id=f"sample_Upsi=False"),
+        pytest.param(True, id=f"sample_Upsi=True"),
+    ],
+)
+@pytest.mark.parametrize(
+    "UUdag", [pytest.param(val, id=f"U={name}") for name, val in operators.items()]
+)
+def test_MCState(sample_Upsi, UUdag):
+    vs_t, vs, vs_exact_t, vs_exact = _setup()
 
-    if is_identity is False:
-        U = _U
-        U_dag = _U_dag
-
-    else:
-        U = None
-        U_dag = None
+    U, U_dag = UUdag
 
     params, unravel = nk.jax.tree_ravel(vs.parameters)
+
+    if sample_Upsi and U is not None and not isinstance(U, DiscreteJaxOperator):
+        with pytest.raises(TypeError):
+            I_op = nkf.infidelity.InfidelityOperator(
+                vs_t,
+                U=U,
+                U_dagger=U_dag,
+                sample_Upsi=sample_Upsi,
+                cv_coeff=-0.5,
+                is_unitary=True,
+            )
+
+        return
 
     def _infidelity_exact_fun(params, vstate, U):
         return _infidelity_exact(unravel(params), vstate, U)
@@ -99,18 +128,20 @@ def test_MCState(sample_Upsi, is_identity):
     same_derivatives(I_grad, I_grad_exact, rel_eps=5e-1)
 
 
-@pytest.mark.parametrize("sample_Upsi", [False, True])
-@pytest.mark.parametrize("is_identity", [False, True])
-def test_FullSumState(sample_Upsi, is_identity):
-    vs_t, vs, vs_exact_t, vs_exact, _U, _U_dag = _setup()
+@pytest.mark.parametrize(
+    "sample_Upsi",
+    [
+        pytest.param(False, id=f"sample_Upsi=False"),
+        pytest.param(True, id=f"sample_Upsi=True"),
+    ],
+)
+@pytest.mark.parametrize(
+    "UUdag", [pytest.param(val, id=f"U={name}") for name, val in operators.items()]
+)
+def test_FullSumState(sample_Upsi, UUdag):
+    vs_t, vs, vs_exact_t, vs_exact = _setup()
 
-    if is_identity is False:
-        U = _U
-        U_dag = _U_dag
-
-    else:
-        U = None
-        U_dag = None
+    U, U_dag = UUdag
 
     params, unravel = nk.jax.tree_ravel(vs_exact.parameters)
 
