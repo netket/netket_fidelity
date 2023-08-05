@@ -8,9 +8,15 @@ description="Infidelity operator for NetKet."
 readme = "README.md"
 requires-python = ">=3.7"
 dependencies = [
-    "netket~=3.6",
+    "netket~=3.9",
 ]
 dynamic = ["version"]
+
+
+[project.optional-dependencies]
+dev = [
+    "ruff==0.0.282",
+]
 
 [tool.hatch.build]
 include = ["netket_fidelity*"]
@@ -63,3 +69,19 @@ filterwarnings = [
 testpaths = [
     "test",
 ]
+
+
+[tool.ruff]
+target-version = "py38"
+select = ["E", "F", "W"]
+fixable = ["E", "F", "W"]
+ignore = ["E501", "E731", "E741"]
+#ignore = ["E266"]
+line-length = 88
+exclude = ["Examples/Legacy"]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["E402","F401"]
+"netket/nn/activation.py" = ["F401"]
+"Examples/" = ["F401"]
+
