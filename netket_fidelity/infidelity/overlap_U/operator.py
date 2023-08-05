@@ -4,15 +4,7 @@ import jax.numpy as jnp
 from netket.operator import AbstractOperator
 from netket.utils.types import DType
 from netket.utils.numbers import is_scalar
-from netket.vqs import VariationalState
-
-# support future netket
-import netket
-
-if hasattr(netket.vqs, "FullSumState"):
-    from netket.vqs import FullSumState
-else:
-    from netket.vqs import ExactState as FullSumState
+from netket.vqs import VariationalState, FullSumState
 
 
 class InfidelityOperatorUPsi(AbstractOperator):

@@ -5,16 +5,7 @@ from netket import jax as nkjax
 from netket.operator import AbstractOperator
 from netket.utils.types import DType
 from netket.utils.numbers import is_scalar
-from netket.vqs import VariationalState, MCState
-
-# support future netket
-import netket
-
-if hasattr(netket.vqs, "FullSumState"):
-    from netket.vqs import FullSumState
-else:
-    from netket.vqs import ExactState as FullSumState
-
+from netket.vqs import VariationalState, MCState, FullSumState
 
 from netket_fidelity.utils.sampling_Ustate import _logpsi_U
 
