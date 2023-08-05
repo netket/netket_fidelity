@@ -36,11 +36,11 @@ def _setup():
         n_discard_per_chain=n_discard_per_chain,
     )
 
-    vs_exact_t = nk.vqs.ExactState(
+    vs_exact_t = nk.vqs.FullSumState(
         hilbert=hi,
         model=ma,
     )
-    vs_exact = nk.vqs.ExactState(
+    vs_exact = nk.vqs.FullSumState(
         hilbert=hi,
         model=ma,
     )
