@@ -8,7 +8,7 @@ from netket.optimizer import (
 )
 
 
-class ptvmc:
+class PTVMC:
     def __init__(
         self,
         target_state,

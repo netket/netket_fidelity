@@ -45,13 +45,14 @@ class Rx(DiscreteJaxOperator):
         return False
 
     def tree_flatten(self):
-        children = ()
-        aux_data = (self.hilbert, self.idx, self.angle)
+        children = (self.angle, )
+        aux_data = (self.hilbert, self.idx, )
         return (children, aux_data)
 
     @classmethod
     def tree_unflatten(cls, aux_data, children):
-        return cls(*aux_data)
+        angle,  = children
+        return cls(*aux_data, angle)
 
     @property
     def max_conn_size(self) -> int:
@@ -87,7 +88,6 @@ def get_conns_and_mels_Rx(sigma, idx, angle):
 
     conns = jnp.tile(sigma, (2, 1))
     conns = conns.at[1, idx].set(-conns.at[1, idx].get())
-    jax.debug.print("angle={}", angle)
     mels = jnp.zeros(2, dtype=complex)
     mels = mels.at[0].set(jnp.cos(angle / 2))
     mels = mels.at[1].set(-1j * jnp.sin(angle / 2))
@@ -134,13 +134,14 @@ class Ry(DiscreteJaxOperator):
         return False
 
     def tree_flatten(self):
-        children = ()
-        aux_data = (self.hilbert, self.idx, self.angle)
+        children = (self.angle, )
+        aux_data = (self.hilbert, self.idx, )
         return (children, aux_data)
 
     @classmethod
     def tree_unflatten(cls, aux_data, children):
-        return cls(*aux_data)
+        angle,  = children
+        return cls(*aux_data, angle)
 
     @jax.jit
     def get_conn_padded(self, x):

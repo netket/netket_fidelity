@@ -1,5 +1,3 @@
-from . import infidelity_optimizer
+from .infidelity_optimizer import InfidelityOptimizer
 
-from . import infidelity_optimizer_common
-
-from . import ptvmc
+from .ptvmc import PTVMC

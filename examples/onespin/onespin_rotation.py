@@ -43,7 +43,7 @@ lr = 0.01
 optimizer = nk.optimizer.Adam(learning_rate=lr)
 
 # Create the p-tVMC driver
-te_ptvmc = nkf.driver.ptvmc.ptvmc(
+te_ptvmc = nkf.driver.PTVMC(
     phi,
     U,
     psi,

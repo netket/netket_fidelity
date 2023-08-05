@@ -35,7 +35,7 @@ optimizer = nk.optimizer.Adam(learning_rate=lr)
 
 # Prepare the |GHZ⟩ on the RBM
 print("Preparing the initial state: ")
-te = nkf.driver.infidelity_optimizer.InfidelityOptimizer(
+te = nkf.driver.InfidelityOptimizer(
     GHZ_vstate, optimizer, variational_state=phi, cv_coeff=-0.5
 )
 te.run(n_iter=n_iter)
@@ -77,7 +77,7 @@ def Trotter_Ising(phi, optimizer, psi, Uxs, Uxs_dagger, J, ts, n_iter, obs=None)
         phi.parameters = params
 
         for i in range(len(Uxs)):
-            te = nkf.driver.infidelity_optimizer.InfidelityOptimizer(
+            te = nkf.driver.InfidelityOptimizer(
                 phi,
                 optimizer,
                 U=Uxs[i],

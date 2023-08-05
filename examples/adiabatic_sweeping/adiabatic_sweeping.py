@@ -73,7 +73,7 @@ def Trotter_adiabatic(phi, optimizer, psi, γ, Γ, ts, n_iter, obs=None):
             Uxs_dagger.append(nkf.operator.Rx(hi, i, -2 * dt * Γt))
 
         for i in range(len(Uxs)):
-            te = nkf.driver.infidelity_optimizer.InfidelityOptimizer(
+            te = nkf.driver.InfidelityOptimizer(
                 phi,
                 optimizer,
                 U=Uxs[i],
