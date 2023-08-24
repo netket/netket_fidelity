@@ -7,12 +7,21 @@ import jax.numpy as jnp
 
 from jax.tree_util import register_pytree_node_class
 
+from netket.hilbert import Spin
 from netket.operator import DiscreteJaxOperator, spin
 
 
 @register_pytree_node_class
 class Rx(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
+        if not isinstance(hi, Spin):
+            raise TypeError("""The Hilbert space used by Rx must be a `Spin` space.
+
+                This limitation could be lifted by 'fixing' the method 
+                `get_conn_and_mels` to work with arbitrary hilbert spaces, which
+                should be relatively straightforward to do, but we have not done so
+                yet.
+                """)
         super().__init__(hi)
         self._idx = idx
         self._angle = angle
@@ -98,6 +107,15 @@ def get_conns_and_mels_Rx(sigma, idx, angle):
 @register_pytree_node_class
 class Ry(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
+        if not isinstance(hi, Spin):
+            raise TypeError("""The Hilbert space used by Rx must be a `Spin` space.
+
+                This limitation could be lifted by 'fixing' the method 
+                `get_conn_and_mels` to work with arbitrary hilbert spaces, which
+                should be relatively straightforward to do, but we have not done so
+                yet.
+                """)
+
         super().__init__(hi)
         self._idx = idx
         self._angle = angle
@@ -186,6 +204,15 @@ def get_conns_and_mels_Ry(sigma, idx, angle):
 @register_pytree_node_class
 class Hadamard(DiscreteJaxOperator):
     def __init__(self, hi, idx):
+        if not isinstance(hi, Spin):
+            raise TypeError("""The Hilbert space used by Rx must be a `Spin` space.
+
+                This limitation could be lifted by 'fixing' the method 
+                `get_conn_and_mels` to work with arbitrary hilbert spaces, which
+                should be relatively straightforward to do, but we have not done so
+                yet.
+                """)
+
         super().__init__(hi)
         self._idx = idx
 
