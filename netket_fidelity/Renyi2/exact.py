@@ -8,7 +8,7 @@ import numpy as np
 
 from netket.utils.dispatch import TrueT
 from netket.vqs import FullSumState, expect
-from netket.stats import statistics as mpi_statistics
+from netket.stats import Stats
 
 from .operator import Renyi2Operator
 
@@ -50,7 +50,7 @@ def Renyi2_sampling_FullSumState(
     mask = np.zeros(N, dtype=bool)
 
     if(len(subsys) == mask.size or len(subsys) == 0):
-        return 0
+        out = 0
 
     else:
         mask[subsys] = True
@@ -60,4 +60,8 @@ def Renyi2_sampling_FullSumState(
         n = 2
         out = np.log2(np.trace(np.linalg.matrix_power(rdm, n))) / (1 - n)
 
-        return np.absolute(out.real)
+        out = np.absolute(out.real)
+        
+    S2_stats = Stats(mean=out, error_of_mean=0.0, variance=0.0)
+    
+    return S2_stats
