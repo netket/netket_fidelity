@@ -14,16 +14,14 @@ from netket.operator import DiscreteJaxOperator, spin
 @register_pytree_node_class
 class Rx(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
-        if not isinstance(hi, Spin):
-            raise TypeError(
-                """The Hilbert space used by Rx must be a `Spin` space.
-
-                This limitation could be lifted by 'fixing' the method
-                `get_conn_and_mels` to work with arbitrary hilbert spaces, which
-                should be relatively straightforward to do, but we have not done so
-                yet.
-                """
-            )
+        # if not isinstance(hi, Spin):
+        #     raise TypeError("""The Hilbert space used by Rx must be a `Spin` space.
+        #
+        #         This limitation could be lifted by 'fixing' the method
+        #         `get_conn_and_mels` to work with arbitrary hilbert spaces, which
+        #         should be relatively straightforward to do, but we have not done so
+        #         yet.
+        #         """)
         super().__init__(hi)
         self._idx = idx
         self._angle = angle
@@ -214,17 +212,15 @@ def get_conns_and_mels_Ry(sigma, idx, angle):
 @register_pytree_node_class
 class Hadamard(DiscreteJaxOperator):
     def __init__(self, hi, idx):
-        if not isinstance(hi, Spin):
-            raise TypeError(
-                """The Hilbert space used by Rx must be a `Spin` space.
-
-                This limitation could be lifted by 'fixing' the method
-                `get_conn_and_mels` to work with arbitrary hilbert spaces, which
-                should be relatively straightforward to do, but we have not done so
-                yet.
-                """
-            )
-
+        # if not isinstance(hi, Spin):
+        #     raise TypeError("""The Hilbert space used by Rx must be a `Spin` space.
+        #
+        #         This limitation could be lifted by 'fixing' the method
+        #         `get_conn_and_mels` to work with arbitrary hilbert spaces, which
+        #         should be relatively straightforward to do, but we have not done so
+        #         yet.
+        #         """)
+        self._local_states = hi.local_states
         super().__init__(hi)
         self._idx = idx
 
@@ -270,7 +266,7 @@ class Hadamard(DiscreteJaxOperator):
     @jax.jit
     def get_conn_padded(self, x):
         xr = x.reshape(-1, x.shape[-1])
-        xp, mels = get_conns_and_mels_Hadamard(xr, self.idx)
+        xp, mels = get_conns_and_mels_Hadamard(xr, self.idx, self._local_states)
         xp = xp.reshape(x.shape[:-1] + xp.shape[-2:])
         mels = mels.reshape(x.shape[:-1] + mels.shape[-1:])
         return xp, mels
@@ -287,15 +283,22 @@ class Hadamard(DiscreteJaxOperator):
         return xp, mels
 
 
-@partial(jax.vmap, in_axes=(0, None), out_axes=(0, 0))
-def get_conns_and_mels_Hadamard(sigma, idx):
+@partial(jax.vmap, in_axes=(0, None, [None, None]), out_axes=(0, 0))
+def get_conns_and_mels_Hadamard(sigma, idx, local_states):
     assert sigma.ndim == 1
 
+    state_0 = jnp.asarray(local_states[0], dtype=sigma.dtype)
+    state_1 = jnp.asarray(local_states[1], dtype=sigma.dtype)
+
     cons = jnp.tile(sigma, (2, 1))
-    cons = cons.at[1, idx].set(-cons.at[1, idx].get())
+    current_state = sigma[idx]
+    flipped_state = jnp.where(current_state == state_0, state_1, state_0)
+    cons = cons.at[1, idx].set(flipped_state)
 
     mels = jnp.zeros(2, dtype=float)
     mels = mels.at[1].set(1 / jnp.sqrt(2))
-    mels = mels.at[0].set(((-1) ** ((cons.at[0, idx].get() + 1) / 2)) / jnp.sqrt(2))
+    state_value = cons.at[0, idx].get()
+    mels_value = jnp.where(state_value == local_states[0], 1, -1) / jnp.sqrt(2)
+    mels = mels.at[0].set(mels_value)
 
     return cons, mels
