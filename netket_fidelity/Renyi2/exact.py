@@ -10,11 +10,11 @@ from netket.utils.dispatch import TrueT
 from netket.vqs import FullSumState, expect
 from netket.stats import Stats
 
-from .operator import Renyi2Operator
+from .operator import Renyi2EntanglementEntropy
 
 
 @expect.dispatch
-def Renyi2(vstate: FullSumState, op: Renyi2Operator):
+def Renyi2(vstate: FullSumState, op: Renyi2EntanglementEntropy):
     
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")

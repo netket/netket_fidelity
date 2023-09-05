@@ -10,7 +10,7 @@ from netket.utils.types import DType
 from netket.utils.dispatch import TrueT
 
 
-class Renyi2Operator(AbstractOperator):
+class Renyi2EntanglementEntropy(AbstractOperator):
     def __init__(
         self,
         hilbert: None, 
@@ -77,5 +77,5 @@ class Renyi2Operator(AbstractOperator):
         return True
 
     def __repr__(self):
-        return f"Renyi2Operator(subsys={self.subsys})"
+        return f"Renyi2EntanglementEntropy(subsys={self.subsys})"
 

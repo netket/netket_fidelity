@@ -8,11 +8,11 @@ from netket.utils.dispatch import TrueT
 from netket.vqs import MCState, expect
 from netket.stats import statistics as mpi_statistics
 
-from .operator import Renyi2Operator
+from .operator import Renyi2EntanglementEntropy
 
 
 @expect.dispatch
-def Renyi2(vstate: MCState, op: Renyi2Operator):
+def Renyi2(vstate: MCState, op: Renyi2EntanglementEntropy):
     
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")
