@@ -1,14 +1,10 @@
 import pytest
-from pytest import approx
 import netket as nk
 import numpy as np
 
-from netket.operator import DiscreteJaxOperator
 
 import netket_fidelity as nkf
 
-from ._infidelity_exact import _infidelity_exact
-from ._finite_diff import central_diff_grad, same_derivatives
 
 N = 3
 hi = nk.hilbert.Spin(0.5, N)

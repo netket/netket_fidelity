@@ -6,7 +6,6 @@ import netket_fidelity as nkf
 
 
 def test_rotations():
-
     N = 4
     hi = nk.hilbert.Spin(0.5, N)
     rx = nkf.operator.Rx(hi, 0, 0.3)

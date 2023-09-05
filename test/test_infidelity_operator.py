@@ -30,7 +30,6 @@ operators["PauliStringJax"] = (op.to_jax_operator(), op_d.to_jax_operator())
 
 
 def _setup():
-
     n_samples = 1e6
     n_discard_per_chain = 1e3
 
@@ -65,8 +64,8 @@ def _setup():
 @pytest.mark.parametrize(
     "sample_Upsi",
     [
-        pytest.param(False, id=f"sample_Upsi=False"),
-        pytest.param(True, id=f"sample_Upsi=True"),
+        pytest.param(False, id="sample_Upsi=False"),
+        pytest.param(True, id="sample_Upsi=True"),
     ],
 )
 @pytest.mark.parametrize(
@@ -131,8 +130,8 @@ def test_MCState(sample_Upsi, UUdag):
 @pytest.mark.parametrize(
     "sample_Upsi",
     [
-        pytest.param(False, id=f"sample_Upsi=False"),
-        pytest.param(True, id=f"sample_Upsi=True"),
+        pytest.param(False, id="sample_Upsi=False"),
+        pytest.param(True, id="sample_Upsi=True"),
     ],
 )
 @pytest.mark.parametrize(

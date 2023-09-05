@@ -15,13 +15,15 @@ from netket.operator import DiscreteJaxOperator, spin
 class Rx(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
         if not isinstance(hi, Spin):
-            raise TypeError("""The Hilbert space used by Rx must be a `Spin` space.
+            raise TypeError(
+                """The Hilbert space used by Rx must be a `Spin` space.
 
                 This limitation could be lifted by 'fixing' the method
                 `get_conn_and_mels` to work with arbitrary hilbert spaces, which
                 should be relatively straightforward to do, but we have not done so
                 yet.
-                """)
+                """
+            )
         super().__init__(hi)
         self._idx = idx
         self._angle = angle
@@ -54,13 +56,16 @@ class Rx(DiscreteJaxOperator):
         return False
 
     def tree_flatten(self):
-        children = (self.angle, )
-        aux_data = (self.hilbert, self.idx, )
+        children = (self.angle,)
+        aux_data = (
+            self.hilbert,
+            self.idx,
+        )
         return (children, aux_data)
 
     @classmethod
     def tree_unflatten(cls, aux_data, children):
-        angle,  = children
+        (angle,) = children
         return cls(*aux_data, angle)
 
     @property
@@ -108,13 +113,15 @@ def get_conns_and_mels_Rx(sigma, idx, angle):
 class Ry(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
         if not isinstance(hi, Spin):
-            raise TypeError("""The Hilbert space used by Rx must be a `Spin` space.
+            raise TypeError(
+                """The Hilbert space used by Rx must be a `Spin` space.
 
                 This limitation could be lifted by 'fixing' the method
                 `get_conn_and_mels` to work with arbitrary hilbert spaces, which
                 should be relatively straightforward to do, but we have not done so
                 yet.
-                """)
+                """
+            )
 
         super().__init__(hi)
         self._idx = idx
@@ -152,13 +159,16 @@ class Ry(DiscreteJaxOperator):
         return False
 
     def tree_flatten(self):
-        children = (self.angle, )
-        aux_data = (self.hilbert, self.idx, )
+        children = (self.angle,)
+        aux_data = (
+            self.hilbert,
+            self.idx,
+        )
         return (children, aux_data)
 
     @classmethod
     def tree_unflatten(cls, aux_data, children):
-        angle,  = children
+        (angle,) = children
         return cls(*aux_data, angle)
 
     @jax.jit
@@ -205,13 +215,15 @@ def get_conns_and_mels_Ry(sigma, idx, angle):
 class Hadamard(DiscreteJaxOperator):
     def __init__(self, hi, idx):
         if not isinstance(hi, Spin):
-            raise TypeError("""The Hilbert space used by Rx must be a `Spin` space.
+            raise TypeError(
+                """The Hilbert space used by Rx must be a `Spin` space.
 
                 This limitation could be lifted by 'fixing' the method
                 `get_conn_and_mels` to work with arbitrary hilbert spaces, which
                 should be relatively straightforward to do, but we have not done so
                 yet.
-                """)
+                """
+            )
 
         super().__init__(hi)
         self._idx = idx

@@ -70,7 +70,6 @@ def infidelity_sampling_MCState(
     cv_coeff,
     return_grad,
 ):
-
     N = sigma.shape[-1]
     n_chains_t = sigma_t.shape[-2]
 

@@ -11,7 +11,6 @@ class GHZ(nn.Module):
 
     @nn.compact
     def __call__(self, x):
-
         lam = self.param("lambda", nn.initializers.normal(), (1,), float)
 
         N = x.shape[-1]
