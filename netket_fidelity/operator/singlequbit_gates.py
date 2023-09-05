@@ -62,7 +62,7 @@ class Rx(DiscreteJaxOperator):
     @jax.jit
     def get_conn_padded(self, x):
         xr = x.reshape(-1, x.shape[-1])
-        xp, mels = get_conns_and_mels_Rx(xr, self.idx, self.angle)
+        xp, mels = get_conns_and_mels_Rx(xr, self.idx, self.angle, self._local_states)
         xp = xp.reshape(x.shape[:-1] + xp.shape[-2:])
         mels = mels.reshape(x.shape[:-1] + mels.shape[-1:])
         return xp, mels
@@ -83,7 +83,7 @@ class Rx(DiscreteJaxOperator):
         return ctheta - 1j * stheta * spin.sigmax(self.hilbert, self.idx)
 
 
-@partial(jax.vmap, in_axes=(0, None, None), out_axes=(0, 0))
+@partial(jax.vmap, in_axes=(0, None, None, [None, None]), out_axes=(0, 0))
 def get_conns_and_mels_Rx(sigma, idx, angle, local_states):
     assert sigma.ndim == 1
 
@@ -157,7 +157,7 @@ class Ry(DiscreteJaxOperator):
     @jax.jit
     def get_conn_padded(self, x):
         xr = x.reshape(-1, x.shape[-1])
-        xp, mels = get_conns_and_mels_Ry(xr, self.idx, self.angle, self._lo)
+        xp, mels = get_conns_and_mels_Ry(xr, self.idx, self.angle, self._local_states)
         xp = xp.reshape(x.shape[:-1] + xp.shape[-2:])
         mels = mels.reshape(x.shape[:-1] + mels.shape[-1:])
         return xp, mels
