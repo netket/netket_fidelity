@@ -24,7 +24,6 @@ class PTVMC:
         is_unitary=False,
         cv_coeff=None,
     ):
-
         self._dt = dt
         self._tf = tf
         self._ts = jnp.arange(0, self._tf, self._dt)
@@ -45,7 +44,6 @@ class PTVMC:
         )
 
     def run(self):
-
         for t in self._ts:
             print(f"Time t = {t}: ")
             print("##########################################")

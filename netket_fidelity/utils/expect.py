@@ -51,7 +51,6 @@ def _expect_2distr(
     σ_old,
     *expected_fun_args,
 ):
-
     L_σ = expected_fun(pars_new, pars_old, σ_new, σ_old, *expected_fun_args)
     if n_chains is not None:
         L_σ = L_σ.reshape((n_chains, -1))

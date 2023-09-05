@@ -41,9 +41,9 @@ with open("initial_state.mpack", "rb") as file:
 # Instantiate the observable to monitor
 obs = sum([nk.operator.spin.sigmaz(hi, i) for i in range(N)]) / N
 
+
 # Function doing the adiabtic dynamics with Trotterized p-tVMC
 def Trotter_adiabatic(phi, optimizer, psi, γ, Γ, ts, n_iter, obs=None):
-
     if obs is not None:
         obs_dict = {"obs": []}
 

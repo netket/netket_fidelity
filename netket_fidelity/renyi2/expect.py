@@ -12,7 +12,6 @@ from .operator import Renyi2EntanglementEntropy
 
 @expect.dispatch
 def Renyi2(vstate: MCState, op: Renyi2EntanglementEntropy):
-
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")
 
@@ -33,7 +32,6 @@ def Renyi2_sampling_MCState(
     samples,
     subsystem,
 ):
-
     N = samples.shape[-1]
     n_chains = int(samples.shape[0] / 2)
 

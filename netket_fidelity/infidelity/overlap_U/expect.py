@@ -86,7 +86,6 @@ def infidelity_sampling_MCState(
     cv_coeff,
     return_grad,
 ):
-
     N = sigma.shape[-1]
     n_chains_t = sigma_t.shape[-2]
 
@@ -118,7 +117,6 @@ def infidelity_sampling_MCState(
 
     def expect_kernel(params):
         def kernel_fun(params, params_t, σ, σ_t):
-
             W = {"params": params, **model_state}
             W_t = {"params": params_t, **model_state_t}
 

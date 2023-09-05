@@ -66,7 +66,6 @@ def InfidelityUPsi(
     cv_coeff: Optional[float] = None,
     dtype: Optional[DType] = None,
 ):
-
     if not isinstance(U, DiscreteJaxOperator):
         raise TypeError(
             "In order to sample from the state U|psi>, U must be"
