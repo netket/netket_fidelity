@@ -15,7 +15,6 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
-    "ruff==0.0.282",
     "pytest>=6",
     "pytest-cov>=2.10.1",
     "pytest-json-report>=1.3",
