@@ -59,12 +59,12 @@ jobs:
       - name: Run docstring tests
         if: ${{ matrix.doctest }}
         run: |
-          pytest --doctest-continue-on-failure --doctest-modules netket/
+          pytest --doctest-continue-on-failure --doctest-modules netket_fidelity/
 
       - name: Run MPI tests
         if: matrix.mpi != ''
         run: |
-          mpirun -host localhost:2 -np 2 coverage run -m pytest -n 0 test
+          mpirun -host localhost:2 -np 2 coverage run -m pytest test
           coverage combine --append
 
       - name: Upload coverage reports to Codecov
