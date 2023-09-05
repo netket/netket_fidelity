@@ -24,6 +24,7 @@ dev = [
     "ruff==0.0.287",
     "wheel",
     "build",
+    "qutip",
 ]
 
 [tool.hatch.build]
