@@ -1,7 +1,6 @@
 import netket as nk
 import netket_fidelity as nkf
 import jax.numpy as jnp
-import scipy
 import matplotlib.pyplot as plt
 import flax
 
