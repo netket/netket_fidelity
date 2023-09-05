@@ -31,7 +31,7 @@ def _setup():
     )
     
     subsys = [0, 1]
-    S2 = nkf.Renyi2.Renyi2Operator(hi, subsys)
+    S2 = nkf.Renyi2EntanglementEntropy(hi, subsys)
     
     return vs, vs_exact, S2, subsys
 

@@ -20,7 +20,7 @@ jobs:
             #doctest: true
 
           - os: macos-latest
-            python-version: "3.8"
+            python-version: "3.11"
             mpi: "mpich"
 
     env:
@@ -45,11 +45,11 @@ jobs:
         if: ${{ ! matrix.oldest_deps }}
         run: |
           if [ -z "${{ matrix.mpi }}" ]; then
-            pip install 'netket[dev]' 'jax[cpu]'
+            pip install 'netket' 'jax[cpu]'
           else
-            pip install 'netket[dev,mpi]' 'jax[cpu]'
+            pip install 'netket[mpi]' 'jax[cpu]'
           fi
-          pip install -e '.'
+          pip install -e '.[dev]'
 
       - name: Run tests
         run: |

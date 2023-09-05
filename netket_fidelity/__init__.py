@@ -6,4 +6,4 @@ from . import infidelity
 
 from . import driver
 
-from . import Renyi2
+from .renyi2 import Renyi2EntanglementEntropy

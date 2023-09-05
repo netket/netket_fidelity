@@ -9,7 +9,6 @@ from netket.operator import DiscreteJaxOperator, spin
 @register_pytree_node_class
 class Rx(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
-
         super().__init__(hi)
         self._local_states = hi.local_states
         self._idx = idx
@@ -201,7 +200,6 @@ def get_conns_and_mels_Ry(sigma, idx, angle, local_states):
 @register_pytree_node_class
 class Hadamard(DiscreteJaxOperator):
     def __init__(self, hi, idx):
-
         self._local_states = hi.local_states
         super().__init__(hi)
         self._idx = idx
