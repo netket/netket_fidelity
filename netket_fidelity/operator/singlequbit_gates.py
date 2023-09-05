@@ -17,7 +17,7 @@ class Rx(DiscreteJaxOperator):
         if not isinstance(hi, Spin):
             raise TypeError("""The Hilbert space used by Rx must be a `Spin` space.
 
-                This limitation could be lifted by 'fixing' the method 
+                This limitation could be lifted by 'fixing' the method
                 `get_conn_and_mels` to work with arbitrary hilbert spaces, which
                 should be relatively straightforward to do, but we have not done so
                 yet.
@@ -110,7 +110,7 @@ class Ry(DiscreteJaxOperator):
         if not isinstance(hi, Spin):
             raise TypeError("""The Hilbert space used by Rx must be a `Spin` space.
 
-                This limitation could be lifted by 'fixing' the method 
+                This limitation could be lifted by 'fixing' the method
                 `get_conn_and_mels` to work with arbitrary hilbert spaces, which
                 should be relatively straightforward to do, but we have not done so
                 yet.
@@ -207,7 +207,7 @@ class Hadamard(DiscreteJaxOperator):
         if not isinstance(hi, Spin):
             raise TypeError("""The Hilbert space used by Rx must be a `Spin` space.
 
-                This limitation could be lifted by 'fixing' the method 
+                This limitation could be lifted by 'fixing' the method
                 `get_conn_and_mels` to work with arbitrary hilbert spaces, which
                 should be relatively straightforward to do, but we have not done so
                 yet.

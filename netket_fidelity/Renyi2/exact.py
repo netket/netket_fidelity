@@ -1,8 +1,6 @@
 import jax.numpy as jnp
 import qutip
 import numpy as np
-from functools import partial 
-import jax 
 
 from netket.vqs import FullSumState, expect
 from netket.stats import Stats
