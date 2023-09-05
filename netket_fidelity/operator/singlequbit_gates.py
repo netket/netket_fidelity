@@ -1,13 +1,8 @@
 from functools import partial
-
 import numpy as np
-
 import jax
 import jax.numpy as jnp
-
 from jax.tree_util import register_pytree_node_class
-
-from netket.hilbert import Spin
 from netket.operator import DiscreteJaxOperator, spin
 
 
@@ -197,10 +192,8 @@ def get_conns_and_mels_Ry(sigma, idx, angle, local_states):
 
     mels = jnp.zeros(2, dtype=complex)
     mels = mels.at[0].set(jnp.cos(angle / 2))
-    phase_factor = jnp.where(cons.at[0, idx].get() == local_states[0],1,-1)
-    mels = mels.at[1].set(
-        phase_factor * jnp.sin(angle / 2)
-    )
+    phase_factor = jnp.where(cons.at[0, idx].get() == local_states[0], 1, -1)
+    mels = mels.at[1].set(phase_factor * jnp.sin(angle / 2))
 
     return cons, mels
 
