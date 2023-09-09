@@ -1,7 +1,6 @@
 import netket as nk
 import netket_fidelity as nkf
 import jax.numpy as jnp
-import scipy
 import matplotlib.pyplot as plt
 import flax
 import numpy as np
@@ -67,7 +66,9 @@ obs_error = np.array([x.error_of_mean for x in te_ptvmc._te.obs_dict["obs"]])
 # Plot the results
 fig = plt.figure(figsize=(8, 8))
 plt.errorbar(
-    ts, obs_mean, obs_error, 
+    ts,
+    obs_mean,
+    obs_error,
 )
 plt.xlabel(r"$t$")
 plt.ylabel(r"$\langle \sigma^z \rangle$")

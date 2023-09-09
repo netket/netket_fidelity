@@ -85,7 +85,7 @@ def Trotter_adiabatic(phi, optimizer, psi, γ, Γ, ts, n_iter, obs=None):
             )
             te.run(n_iter=n_iter)
             phi.parameters = psi.parameters
-        
+
         # Z diagonal term
         params = flax.core.unfreeze(phi.parameters)
         params["visible_bias"] = params["visible_bias"] + 1j * γt * dt / 2
