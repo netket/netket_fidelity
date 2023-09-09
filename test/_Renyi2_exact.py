@@ -2,6 +2,7 @@ import numpy as np
 import jax.numpy as jnp
 import qutip
 
+
 def _Renyi2_exact(vstate, subsys):
     sigma = vstate.hilbert.all_states()
     N = sigma.shape[-1]
@@ -13,7 +14,7 @@ def _Renyi2_exact(vstate, subsys):
 
     mask = np.zeros(N, dtype=bool)
 
-    if(len(subsys) == mask.size or len(subsys) == 0):
+    if len(subsys) == mask.size or len(subsys) == 0:
         return 0
 
     else:

@@ -3,6 +3,7 @@ import netket_fidelity as nkf
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import flax
+import numpy as np
 
 # Set the parameters
 N = 10
@@ -13,8 +14,6 @@ dt = 0.05
 tf = 15
 ts = jnp.arange(0, tf, dt)
 T = 8
-
-ts = jnp.arange(0, tf, dt)
 
 # Create the Hilbert space and the variational states |ψ⟩ and |ϕ⟩
 hi = nk.hilbert.Spin(0.5, N)
@@ -59,6 +58,7 @@ def Trotter_adiabatic(phi, optimizer, psi, γ, Γ, ts, n_iter, obs=None):
             γt = γ * (1 - (t - T) / T)
             Γt = Γ * (t - T) / T
 
+        # Z diagonal term
         params = flax.core.unfreeze(phi.parameters)
         params["visible_bias"] = params["visible_bias"] + 1j * γt * dt / 2
         psi.parameters = params
@@ -72,6 +72,7 @@ def Trotter_adiabatic(phi, optimizer, psi, γ, Γ, ts, n_iter, obs=None):
             Uxs.append(nkf.operator.Rx(hi, i, 2 * dt * Γt))
             Uxs_dagger.append(nkf.operator.Rx(hi, i, -2 * dt * Γt))
 
+        # X terms
         for i in range(len(Uxs)):
             te = nkf.driver.InfidelityOptimizer(
                 phi,
@@ -84,9 +85,8 @@ def Trotter_adiabatic(phi, optimizer, psi, γ, Γ, ts, n_iter, obs=None):
             )
             te.run(n_iter=n_iter)
             phi.parameters = psi.parameters
-
-        params = flax.core.unfreeze(phi.parameters)
-
+        
+        # Z diagonal term
         params = flax.core.unfreeze(phi.parameters)
         params["visible_bias"] = params["visible_bias"] + 1j * γt * dt / 2
         psi.parameters = params
@@ -108,10 +108,13 @@ def Trotter_adiabatic(phi, optimizer, psi, γ, Γ, ts, n_iter, obs=None):
 # Run the evolution
 psi, obs_dict = Trotter_adiabatic(phi, optimizer, psi, γ, Γ, ts, n_iter=n_iter, obs=obs)
 
+obs_mean = np.array([x.mean for x in obs_dict["obs"]])
+obs_error = np.array([x.error_of_mean for x in obs_dict["obs"]])
+
 # Plot the results
 fig = plt.figure(figsize=(8, 8))
-plt.errorbar(ts, obs_dict["obs"].mean, obs_dict["obs"].error_of_mean)
-plt.xlabel(r"Time $t$")
+plt.errorbar(ts, obs_mean, obs_error)
+plt.xlabel(r"$t$")
 plt.ylabel(r"$\langle \sigma_i^z \rangle$")
 plt.legend()
 plt.tight_layout()

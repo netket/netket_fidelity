@@ -16,6 +16,7 @@ dynamic = ["version"]
 [project.optional-dependencies]
 dev = [
     "ruff==0.0.282",
+    "qutip>=4.7.0",
 ]
 
 [tool.hatch.build]
@@ -31,7 +32,7 @@ version-file = "netket_fidelity/_version.py"
 
 [tool.black]
 line-length = 88
-target-version = ['py37', 'py38', 'py39', 'py310']
+target-version = ['py39', 'py310']
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -70,9 +71,8 @@ testpaths = [
     "test",
 ]
 
-
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 select = ["E", "F", "W"]
 fixable = ["E", "F", "W"]
 ignore = ["E501", "E731", "E741"]
@@ -84,4 +84,3 @@ exclude = ["Examples/Legacy"]
 "__init__.py" = ["E402","F401"]
 "netket/nn/activation.py" = ["F401"]
 "Examples/" = ["F401"]
-

@@ -64,7 +64,7 @@ class Renyi2EntanglementEntropy(AbstractOperator):
     @property
     def subsystem(self):
         r"""
-        list of indices for the degrees of freedom in the subsytem
+        list of indices for the degrees of freedom in the subsystem
         """
         return self._subsystem
 

@@ -10,6 +10,7 @@ from ._Renyi2_exact import _Renyi2_exact
 N = 3
 hi = nk.hilbert.Spin(0.5, N)
 
+
 def _setup():
 
     n_samples = 1e4
@@ -29,35 +30,32 @@ def _setup():
         hilbert=hi,
         model=ma,
     )
-    
+
     subsys = [0, 1]
-    S2 = nkf.Renyi2.Renyi2Operator(hi, subsys)
-    
+    S2 = nkf.Renyi2.Renyi2EntanglementEntropy(hi, subsys)
+
     return vs, vs_exact, S2, subsys
 
 
 def test_MCState():
-    
+
     vs, vs_exact, S2, subsys = _setup()
     S2_stats = vs.expect(S2)
     S2_exact = _Renyi2_exact(vs, subsys)
-    
+
     S2_mean = S2_stats.mean
     err = 3 * S2_stats.error_of_mean
-    
+
     np.testing.assert_allclose(S2_exact, S2_mean.real, atol=err)
 
-    
+
 def test_FullSumState():
-    
+
     vs, vs_exact, S2, subsys = _setup()
     S2_stats = vs_exact.expect(S2)
     S2_exact = _Renyi2_exact(vs_exact, subsys)
-    
+
     S2_mean = S2_stats.mean
     err = 1e-12
-    
-    np.testing.assert_allclose(S2_exact, S2_mean.real, atol=err)
 
-    
-    
+    np.testing.assert_allclose(S2_exact, S2_mean.real, atol=err)

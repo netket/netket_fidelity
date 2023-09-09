@@ -4,6 +4,7 @@ import jax.numpy as jnp
 import scipy
 import matplotlib.pyplot as plt
 import flax
+import numpy as np
 
 from onespin_ansatz import BlochSphere_1spin
 
@@ -60,12 +61,15 @@ te_ptvmc = nkf.driver.PTVMC(
 # Run the driver
 te_ptvmc.run()
 
+obs_mean = np.array([x.mean for x in te_ptvmc._te.obs_dict["obs"]])
+obs_error = np.array([x.error_of_mean for x in te_ptvmc._te.obs_dict["obs"]])
+
 # Plot the results
 fig = plt.figure(figsize=(8, 8))
 plt.errorbar(
-    ts, te_ptvmc._te.obs_dict["obs"].mean, te_ptvmc._te.obs_dict["obs"].error_of_mean
+    ts, obs_mean, obs_error, 
 )
-plt.xlabel(r"Time $t$")
+plt.xlabel(r"$t$")
 plt.ylabel(r"$\langle \sigma^z \rangle$")
 plt.legend()
 plt.tight_layout()
