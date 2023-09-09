@@ -4,25 +4,24 @@ from typing import Union, Any
 import numpy as np
 import netket.nn as nknn
 import jax.numpy as jnp
-import netket
 from netket.utils.types import NNInitFunc
 from flax.linen.dtypes import promote_dtype
 from functools import partial
-import flax 
 
 default_kernel_init = nn.initializers.normal(stddev=0.01)
 
 tol = 1e-12
 
+
 @partial(jax.vmap, in_axes=(0, None, None, None), out_axes=(0))
 def spwf(sigma, orbital_up, orbital_down, N):
-    
-    return 0.5 * (1+sigma) * orbital_up + 0.5 * (1-sigma) * orbital_down
+
+    return 0.5 * (1 + sigma) * orbital_up + 0.5 * (1 - sigma) * orbital_down
 
 
 class RBMJasMeas(nn.Module):
     r"""A Restricted Boltzmann Machine endowed with the Jastrow term to perform
-        exact ZZ gates and the MF-like term to realize projective measurements
+    exact ZZ gates and the MF-like term to realize projective measurements
     """
 
     param_dtype: Any = np.float64
@@ -72,10 +71,15 @@ class RBMJasMeas(nn.Module):
         else:
             out_RBM = x
 
-
-        theta_zz = self.param("theta_zz", nn.initializers.zeros, (N, N), self.param_dtype)
-        orbital_up = self.param("orbital_up", nn.initializers.ones, (N, ), self.param_dtype)
-        orbital_down = self.param("orbital_down", nn.initializers.ones, (N, ), self.param_dtype)
+        theta_zz = self.param(
+            "theta_zz", nn.initializers.zeros, (N, N), self.param_dtype
+        )
+        orbital_up = self.param(
+            "orbital_up", nn.initializers.ones, (N,), self.param_dtype
+        )
+        orbital_down = self.param(
+            "orbital_down", nn.initializers.ones, (N,), self.param_dtype
+        )
 
         theta_zz = theta_zz + theta_zz.T
         theta_zz, x_in = promote_dtype(theta_zz, input, dtype=None)
@@ -83,8 +87,5 @@ class RBMJasMeas(nn.Module):
 
         out_MF = spwf(input, orbital_up, orbital_down, N)
         out_MF = jnp.sum(jnp.log(out_MF), axis=-1)
-        
+
         return out_RBM + 1j * out_Jas_zz + out_MF
-
-
-
