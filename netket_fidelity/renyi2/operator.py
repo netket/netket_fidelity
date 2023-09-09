@@ -15,7 +15,6 @@ class Renyi2EntanglementEntropy(AbstractOperator):
         *,
         dtype: Optional[DType] = None,
     ):
-
         r"""
         Operator computing the Rényi2 entanglement entropy of a state |ψ⟩ for a partition with subsystem A:
 
@@ -54,7 +53,6 @@ class Renyi2EntanglementEntropy(AbstractOperator):
             or np.where(self._subsystem < 0)[0].size > 0
             or np.where(self._subsystem > hilbert.size)[0].size > 0
         ):
-
             print("Invalid partition")
 
     @property

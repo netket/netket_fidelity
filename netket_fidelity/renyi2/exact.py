@@ -1,17 +1,15 @@
 import jax.numpy as jnp
 import qutip
 import numpy as np
-from functools import partial 
-import jax 
 
 from netket.vqs import FullSumState, expect
 from netket.stats import Stats
 
 from .operator import Renyi2EntanglementEntropy
 
+
 @expect.dispatch
 def Renyi2(vstate: FullSumState, op: Renyi2EntanglementEntropy):
-
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")
 
@@ -31,7 +29,6 @@ def Renyi2_sampling_FullSumState(
     sigma,
     subsystem,
 ):
-
     N = sigma.shape[-1]
 
     state = jnp.exp(afun({"params": params, **model_state}, sigma))

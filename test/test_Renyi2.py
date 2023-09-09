@@ -1,5 +1,3 @@
-import pytest
-from pytest import approx
 import netket as nk
 import numpy as np
 
@@ -12,7 +10,6 @@ hi = nk.hilbert.Spin(0.5, N)
 
 
 def _setup():
-
     n_samples = 1e4
     n_discard_per_chain = 1e3
 
@@ -32,13 +29,12 @@ def _setup():
     )
 
     subsys = [0, 1]
-    S2 = nkf.Renyi2.Renyi2EntanglementEntropy(hi, subsys)
+    S2 = nkf.Renyi2EntanglementEntropy(hi, subsys)
 
     return vs, vs_exact, S2, subsys
 
 
 def test_MCState():
-
     vs, vs_exact, S2, subsys = _setup()
     S2_stats = vs.expect(S2)
     S2_exact = _Renyi2_exact(vs, subsys)
@@ -50,7 +46,6 @@ def test_MCState():
 
 
 def test_FullSumState():
-
     vs, vs_exact, S2, subsys = _setup()
     S2_stats = vs_exact.expect(S2)
     S2_exact = _Renyi2_exact(vs_exact, subsys)

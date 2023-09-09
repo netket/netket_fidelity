@@ -53,14 +53,13 @@ for i in range(N):
 # Instantiate the observable to monitor
 obs = nk.operator.spin.sigmaz(hi, 0) * nk.operator.spin.sigmaz(hi, 1)
 
+
 # Function doing the TFI dynamics with Trotterized p-tVMC
 def Trotter_Ising(phi, optimizer, psi, Uxs, Uxs_dagger, J, ts, n_iter, obs=None):
-
     if obs is not None:
         obs_dict = {"obs": []}
 
     for t in ts:
-
         if obs is not None:
             obs_dict["obs"].append(phi.expect(obs))
 
@@ -68,7 +67,7 @@ def Trotter_Ising(phi, optimizer, psi, Uxs, Uxs_dagger, J, ts, n_iter, obs=None)
         print("##########################################")
 
         params = flax.core.unfreeze(phi.parameters)
-        for (l, m) in g.edges():
+        for l, m in g.edges():
             params["theta_zz"] = (
                 params["theta_zz"]
                 .at[l, m]
@@ -91,7 +90,7 @@ def Trotter_Ising(phi, optimizer, psi, Uxs, Uxs_dagger, J, ts, n_iter, obs=None)
             phi.parameters = psi.parameters
 
         params = flax.core.unfreeze(phi.parameters)
-        for (l, m) in g.edges():
+        for l, m in g.edges():
             params["theta_zz"] = (
                 params["theta_zz"]
                 .at[l, m]
