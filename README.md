@@ -53,7 +53,7 @@ import netket_fidelity as nkf
 # Create the Hilbert space and the variational states |ψ⟩ and |ϕ⟩
 hi = nk.hilbert.Spin(0.5, 4)
 sampler = nk.sampler.MetropolisLocal(hilbert=hi, n_chains_per_rank=16)
-model = nk.models.RBM(alpha=1, param_dtype=complex)
+model = nk.models.RBM(alpha=1, param_dtype=complex, use_visible_bias=False)
 phi = nk.vqs.MCState(sampler=sampler, model=model, n_samples=100)
 psi = nk.vqs.MCState(sampler=sampler, model=model, n_samples=100)
 
