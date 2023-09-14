@@ -1,5 +1,7 @@
 # projected time-dependent Variational Monte Carlo (p-tVMC)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7958760.svg)](https://doi.org/10.5281/zenodo.7958760)
+![Tests status](https://github.com/netket/netket_fidelity/actions/workflows/CI.yml/badge.svg)
+[![Slack](https://img.shields.io/badge/slack-chat-green.svg)](https://join.slack.com/t/mlquantum/shared_invite/zt-19wibmfdv-LLRI6i43wrLev6oQX0OfOw)
 
 This is a package for the projected time-dependent Variational Monte Carlo (p-tVMC) method based on infidelity optimization for variational simulation of quantum dynamics. 
 See the paper "Unbiasing time-dependent Variational Monte Carlo with projected quantum evolution" for reference. 
@@ -21,13 +23,21 @@ In addition, the code includes the possibility to use the Control Variates (CV) 
 
 ## Installation
 
-This package is not registered on PyPi, so to install it you can install it directly from github by running the following line:
+This package is not registered on PyPi, so you must install it directly from GitHub.
+You can install either:
+ 
+ - The latest version of the code available on GitHub, which might or might not work at the moment (in case it does not work, do open an issue with us). To do so, run the following line in your commandline:
 
 ```bash
 pip install git+https://github.com/netket/netket_fidelity
 ```
 
-or by cloning the repository and installing it manually in editable mode
+- The version corresponding to the revised version of the manuscript we submitted on the ArXiV/Quantum Journal (September 2023). 
+
+```bash
+pip install "git+https://github.com/netket/netket_fidelity@v0.0.2"
+```
+- You can download this repository and install it manually in editable mode
 
 ```bash
 git clone https://github.com/netket/netket_fidelity
