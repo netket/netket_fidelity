@@ -10,7 +10,7 @@ from netket.operator import DiscreteJaxOperator, spin
 class Rx(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
         super().__init__(hi)
-        self._local_states = hi.local_states
+        self._local_states = jnp.asarray(hi.local_states)
         self._idx = idx
         self._angle = angle
 
@@ -89,23 +89,23 @@ def get_conns_and_mels_Rx(sigma, idx, angle, local_states):
     state_0 = jnp.asarray(local_states[0], dtype=sigma.dtype)
     state_1 = jnp.asarray(local_states[1], dtype=sigma.dtype)
 
-    cons = jnp.tile(sigma, (2, 1))
+    conns = jnp.tile(sigma, (2, 1))
     current_state = sigma[idx]
     flipped_state = jnp.where(current_state == state_0, state_1, state_0)
-    cons = cons.at[1, idx].set(flipped_state)
+    conns = conns.at[1, idx].set(flipped_state)
 
     mels = jnp.zeros(2, dtype=complex)
     mels = mels.at[0].set(jnp.cos(angle / 2))
     mels = mels.at[1].set(-1j * jnp.sin(angle / 2))
 
-    return cons, mels
+    return conns, mels
 
 
 @register_pytree_node_class
 class Ry(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
         super().__init__(hi)
-        self._local_states = hi.local_states
+        self._local_states = jnp.asarray(hi.local_states)
         self._idx = idx
         self._angle = angle
 
@@ -184,24 +184,24 @@ def get_conns_and_mels_Ry(sigma, idx, angle, local_states):
     state_0 = jnp.asarray(local_states[0], dtype=sigma.dtype)
     state_1 = jnp.asarray(local_states[1], dtype=sigma.dtype)
 
-    cons = jnp.tile(sigma, (2, 1))
+    conns = jnp.tile(sigma, (2, 1))
     current_state = sigma[idx]
     flipped_state = jnp.where(current_state == state_0, state_1, state_0)
-    cons = cons.at[1, idx].set(flipped_state)
+    conns = conns.at[1, idx].set(flipped_state)
 
     mels = jnp.zeros(2, dtype=complex)
     mels = mels.at[0].set(jnp.cos(angle / 2))
-    phase_factor = jnp.where(cons.at[0, idx].get() == local_states[0], 1, -1)
+    phase_factor = jnp.where(conns.at[0, idx].get() == local_states[0], 1, -1)
     mels = mels.at[1].set(phase_factor * jnp.sin(angle / 2))
 
-    return cons, mels
+    return conns, mels
 
 
 @register_pytree_node_class
 class Hadamard(DiscreteJaxOperator):
     def __init__(self, hi, idx):
-        self._local_states = hi.local_states
         super().__init__(hi)
+        self._local_states = jnp.asarray(hi.local_states)
         self._idx = idx
 
     @property
@@ -270,15 +270,15 @@ def get_conns_and_mels_Hadamard(sigma, idx, local_states):
     state_0 = jnp.asarray(local_states[0], dtype=sigma.dtype)
     state_1 = jnp.asarray(local_states[1], dtype=sigma.dtype)
 
-    cons = jnp.tile(sigma, (2, 1))
+    conns = jnp.tile(sigma, (2, 1))
     current_state = sigma[idx]
     flipped_state = jnp.where(current_state == state_0, state_1, state_0)
-    cons = cons.at[1, idx].set(flipped_state)
+    conns = conns.at[1, idx].set(flipped_state)
 
     mels = jnp.zeros(2, dtype=float)
     mels = mels.at[1].set(1 / jnp.sqrt(2))
-    state_value = cons.at[0, idx].get()
+    state_value = conns.at[0, idx].get()
     mels_value = jnp.where(state_value == local_states[0], 1, -1) / jnp.sqrt(2)
     mels = mels.at[0].set(mels_value)
 
-    return cons, mels
+    return conns, mels
