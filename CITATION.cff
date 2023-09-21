@@ -1,0 +1,20 @@
+authors:
+  - family-names: Sinibaldi
+    given-names: Alessandro
+  - family-names: Vicentini
+    given-names: Filippo
+cff-version: 0.0.2
+message: "If you use this software, please cite the article from preferred-citation."
+title: netket_fidelity
+url: "https://github.com/netket/netket_fidelity"
+preferred-citation:
+  type: software
+  title: "netket_fidelity package"
+  authors:
+    - family-names: Sinibaldi
+      given-names: Alessandro
+    - family-names: Vicentini
+      given-names: Filippo
+  year: 2023
+  doi: "10.5281/zenodo.8344170"
+  url: "https://doi.org/10.5281/zenodo.8344170"
