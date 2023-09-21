@@ -76,13 +76,13 @@ How to cite
 
 If you use ``netket_fidelity`` in your work, please consider citing it as:
 
-::
-
+```
 @software{netket_fidelity,
-  author = {Sinibaldi, Alessandro and Vicentini, Filippo},
-  title = {netket\_fidelity package},
-  url = {https://github.com/netket/netket_fidelity},
-  doi = {10.5281/zenodo.8344170},
-  version = {0.0.2},
-  year = {2023}
-}
+    author = {Sinibaldi, Alessandro and Vicentini, Filippo},
+    title = {netket\_fidelity package},
+    url = {https://github.com/netket/netket_fidelity},
+    doi = {10.5281/zenodo.8344170},
+    version = {0.0.2},
+    year = {2023}
+    }
+```
