@@ -1,5 +1,5 @@
 # projected time-dependent Variational Monte Carlo (p-tVMC)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7958760.svg)](https://doi.org/10.5281/zenodo.8344170)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8344170.svg)](https://doi.org/10.5281/zenodo.8344170)
 ![Tests status](https://github.com/netket/netket_fidelity/actions/workflows/CI.yml/badge.svg)
 [![Slack](https://img.shields.io/badge/slack-chat-green.svg)](https://join.slack.com/t/mlquantum/shared_invite/zt-19wibmfdv-LLRI6i43wrLev6oQX0OfOw)
 
