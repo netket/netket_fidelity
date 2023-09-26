@@ -24,7 +24,7 @@ class Renyi2EntanglementEntropy(AbstractOperator):
 
         where ρ = |ψ⟩⟨ψ| is the density matrix of the system and Tr_A indicates the partial trace over the subsystem A.
 
-        The Monte Carlo estimator of S_2 is:
+        The Monte Carlo estimator of S_2 (Hastings et al., PRL 104, 157201 (2010)) is:
 
         ..math::
 
