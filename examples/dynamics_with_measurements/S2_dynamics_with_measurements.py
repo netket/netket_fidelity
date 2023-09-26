@@ -64,7 +64,8 @@ key_spin = jax.random.PRNGKey(seed=5678)
 
 # Instantiate the Renyi2 entropy to monitor
 subsys = [x for x in range(N // 2)]
-S2op = nkf.Renyi2.Renyi2EntanglementEntropy(hi, subsys)
+S2op = nkf.Renyi2EntanglementEntropy(hi, subsys)
+
 
 # Compute the probabilities for the measurement outcomes of a spin
 def probabilities_measurement(vstate, spin):
@@ -84,12 +85,10 @@ def probabilities_measurement(vstate, spin):
 
 # Perform the projective measurement exactly
 def projective_measurement(phi, psi, p, key_meas, key_spin):
-
     for i in range(psi.hilbert.size):
         key_meas, subkey_meas = jax.random.split(key_meas)
 
         if jax.random.uniform(subkey_meas) < p:
-
             print("Measurement!")
             prob_down, prob_up = probabilities_measurement(psi, i)
 
@@ -112,7 +111,6 @@ def projective_measurement(phi, psi, p, key_meas, key_spin):
 def dynamics_with_measurements(
     phi, optimizer, psi, J, Uxs, Uxs_dagger, ts, n_iter, p, S2op, key_meas, key_spin
 ):
-
     obs_dict = {"S2": []}
 
     for t in ts:
@@ -130,7 +128,7 @@ def dynamics_with_measurements(
         # ZZ diagonal term
         params = flax.core.unfreeze(psi.parameters)
         params = jax.tree_map(lambda x: jnp.array(x), params)
-        for (l, m) in g.edges():
+        for l, m in g.edges():
             params["theta_zz"] = (
                 params["theta_zz"]
                 .at[l, m]
@@ -156,7 +154,7 @@ def dynamics_with_measurements(
         # ZZ diagonal term
         params = flax.core.unfreeze(psi.parameters)
         params = jax.tree_map(lambda x: jnp.array(x), params)
-        for (l, m) in g.edges():
+        for l, m in g.edges():
             params["theta_zz"] = (
                 params["theta_zz"]
                 .at[l, m]
