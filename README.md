@@ -61,11 +61,11 @@ psi = nk.vqs.MCState(sampler=sampler, model=model, n_samples=100)
 U = nkf.operator.Hadamard(hi, 0)
 
 # Instantiate the operator to optimize the infidelity with U|ϕ⟩ by sampling from |ψ⟩ and |ϕ⟩
-I_op = nkf.infidelity.InfidelityOperator(phi, U=U, U_dagger=U, is_unitary=True, cv_coeff=-1/2)
+I_op = nkf.InfidelityOperator(phi, U=U, U_dagger=U, is_unitary=True, cv_coeff=-1/2)
 
 # Create the driver
 optimizer = nk.optimizer.Sgd(learning_rate=0.01)
-te =  nkf.driver.infidelity_optimizer.InfidelityOptimizer(phi, optimizer, U=U, U_dagger=U, variational_state=psi, is_unitary=True, cv_coeff=-0.5)
+te =  nkf.driver.InfidelityOptimizer(phi, optimizer, U=U, U_dagger=U, variational_state=psi, is_unitary=True, cv_coeff=-0.5)
 
 # Run the driver
 te.run(n_iter=100)
