@@ -11,7 +11,7 @@ from .operator import Renyi2EntanglementEntropy
 
 
 @expect.dispatch
-def Renyi2(vstate: MCState, op: Renyi2EntanglementEntropy):
+def Renyi2(vstate: MCState, op: Renyi2EntanglementEntropy, chunk_size: None):
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")
 

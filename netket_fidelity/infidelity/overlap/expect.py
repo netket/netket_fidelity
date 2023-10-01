@@ -3,7 +3,6 @@ from functools import partial
 import jax.numpy as jnp
 import jax
 
-from netket.utils.dispatch import TrueT
 from netket.vqs import MCState, expect, expect_and_grad
 from netket import jax as nkjax
 from netket.utils import mpi
@@ -14,7 +13,7 @@ from .operator import InfidelityOperatorStandard
 
 
 @expect.dispatch
-def infidelity(vstate: MCState, op: InfidelityOperatorStandard):
+def infidelity(vstate: MCState, op: InfidelityOperatorStandard, chunk_size: None):
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")
 
@@ -36,7 +35,7 @@ def infidelity(vstate: MCState, op: InfidelityOperatorStandard):
 def infidelity(  # noqa: F811
     vstate: MCState,
     op: InfidelityOperatorStandard,
-    use_covariance: TrueT,
+    chunk_size: None,
     *,
     mutable,
 ):
