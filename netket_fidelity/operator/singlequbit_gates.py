@@ -114,7 +114,7 @@ class Ry(DiscreteJaxOperator):
     def __init__(self, hi, idx, angle):
         if not isinstance(hi, Spin):
             raise TypeError(
-                """The Hilbert space used by Rx must be a `Spin` space.
+                """The Hilbert space used by Ry must be a `Spin` space.
 
                 This limitation could be lifted by 'fixing' the method
                 `get_conn_and_mels` to work with arbitrary hilbert spaces, which
@@ -216,7 +216,7 @@ class Hadamard(DiscreteJaxOperator):
     def __init__(self, hi, idx):
         if not isinstance(hi, Spin):
             raise TypeError(
-                """The Hilbert space used by Rx must be a `Spin` space.
+                """The Hilbert space used by Hadamard must be a `Spin` space.
 
                 This limitation could be lifted by 'fixing' the method
                 `get_conn_and_mels` to work with arbitrary hilbert spaces, which
