@@ -40,7 +40,6 @@ class Renyi2EntanglementEntropy(AbstractOperator):
         Returns:
             Rényi2 operator for which computing expected value.
 
-        Example:
         """
 
         super().__init__(hilbert)

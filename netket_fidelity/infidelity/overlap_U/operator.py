@@ -25,8 +25,8 @@ class InfidelityOperatorUPsi(AbstractOperator):
 
         if not is_unitary and not isinstance(state, FullSumState):
             raise ValueError(
-                "Only works with unitary gates. If the gate is non unitary"
-                " then you must sample from it. Use a different operator."
+                "Only works with unitary gates. If the gate is non unitary "
+                "then you must sample from it. Use a different operator."
             )
 
         if cv_coeff is not None:
