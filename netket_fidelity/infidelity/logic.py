@@ -115,9 +115,9 @@ def InfidelityOperator(
             U_dagger = U.H
         if isinstance(U_dagger, Adjoint):
             raise TypeError(
-                "Must explicitly pass a jax-compatible operator as `U_dagger`."
-                "You either did not pass `U_dagger` explicitly or you used `U.H` but should"
-                "use operators coming from `netket_fidelity`."
+                "Must explicitly pass a jax-compatible operator as `U_dagger`. "
+                "You either did not pass `U_dagger` explicitly or you used `U.H` but should "
+                "use operators coming from `netket_fidelity`. "
             )
 
         if isinstance(target, FullSumState):
@@ -132,14 +132,14 @@ def InfidelityOperator(
         if not is_unitary and not sample_Upsi:
             raise ValueError(
                 "Non-unitary operators can only be handled by sampling from the state U|ψ⟩. "
-                "This is more expensive and disabled by default."
+                "This is more expensive and disabled by default. "
                 ""
                 "If your operator is Unitary, please specify so by passing `is_unitary=True` as a "
-                "keyword argument."
+                "keyword argument. "
                 ""
                 "If your operator is not unitary, please specify `sample_Upsi=True` explicitly to"
-                "sample from that state."
-                "You can also sample from U|ψ⟩ if your operator is unitary."
+                "sample from that state. "
+                "You can also sample from U|ψ⟩ if your operator is unitary. "
                 ""
             )
 

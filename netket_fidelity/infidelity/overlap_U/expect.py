@@ -20,8 +20,6 @@ def infidelity(vstate: MCState, op: InfidelityOperatorUPsi):
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")
 
-    print(type(vstate), type(op), type(op.target), type(op._U), type(op._U_dagger))
-
     sigma, args = get_local_kernel_arguments(vstate, op._U)
     sigma_t, args_t = get_local_kernel_arguments(op.target, op._U_dagger)
 

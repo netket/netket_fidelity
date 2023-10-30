@@ -80,7 +80,7 @@ def test_MCState(sample_Upsi, UUdag):
 
     if sample_Upsi and U is not None and not isinstance(U, DiscreteJaxOperator):
         with pytest.raises(TypeError):
-            I_op = nkf.infidelity.InfidelityOperator(
+            I_op = nkf.InfidelityOperator(
                 vs_t,
                 U=U,
                 U_dagger=U_dag,
@@ -102,7 +102,7 @@ def test_MCState(sample_Upsi, UUdag):
 
     I_grad_exact = central_diff_grad(_infidelity_exact_fun, params, 1.0e-5, vs_t, U)
 
-    I_op = nkf.infidelity.InfidelityOperator(
+    I_op = nkf.InfidelityOperator(
         vs_t,
         U=U,
         U_dagger=U_dag,
@@ -157,7 +157,7 @@ def test_FullSumState(sample_Upsi, UUdag):
         _infidelity_exact_fun, params, 1.0e-5, vs_exact_t, U
     )
 
-    I_op = nkf.infidelity.InfidelityOperator(
+    I_op = nkf.InfidelityOperator(
         vs_exact_t,
         U=U,
         U_dagger=U_dag,

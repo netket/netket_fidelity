@@ -39,6 +39,7 @@ class InfidelityOptimizer(AbstractVariationalDriver):
         U_dagger=None,
         preconditioner: PreconditionerT = identity_preconditioner,
         is_unitary=False,
+        sample_Upsi=False, 
         cv_coeff=-0.5,
     ):
         r"""
@@ -134,6 +135,7 @@ class InfidelityOptimizer(AbstractVariationalDriver):
             U_dagger=U_dagger,
             is_unitary=is_unitary,
             cv_coeff=cv_coeff,
+            sample_Upsi=sample_Upsi, 
         )
 
     def _forward_and_backward(self):
