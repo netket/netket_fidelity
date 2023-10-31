@@ -15,7 +15,6 @@ tol = 1e-12
 
 @partial(jax.vmap, in_axes=(0, None, None, None), out_axes=(0))
 def spwf(sigma, orbital_up, orbital_down, N):
-
     return 0.5 * (1 + sigma) * orbital_up + 0.5 * (1 - sigma) * orbital_down
 
 
