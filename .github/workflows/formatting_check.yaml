@@ -46,4 +46,4 @@ jobs:
         with:
           version: 0.1.3
           args: --config pyproject.toml
-          src: netket test examples
+          src: netket_fidelity test examples
