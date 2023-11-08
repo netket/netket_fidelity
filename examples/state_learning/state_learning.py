@@ -39,13 +39,11 @@ vs.expect(inf)
 
 # or just use the Infidelity optimisation driver
 optimizer = nk.optimizer.Adam()
-driver = nkf.driver.InfidelityOptimizer(
-    vs_target, optimizer, variational_state=vs
-)
+driver = nkf.driver.InfidelityOptimizer(vs_target, optimizer, variational_state=vs)
 
 log = nk.logging.RuntimeLog()
 driver.run(300, out=log)
 
 plt.ion()
-plt.semilogy(log.data['Infidelity'].iters, log.data['Infidelity'])
+plt.semilogy(log.data["Infidelity"].iters, log.data["Infidelity"])
 plt.show()
