@@ -1,9 +1,9 @@
 import netket as nk
 import numpy as np
 
-import netket_fidelity as nkf
 
 from ._Renyi2_exact import _Renyi2_exact
+from netket_fidelity.renyi2 import Renyi2EntanglementEntropy
 
 N = 3
 hi = nk.hilbert.Spin(0.5, N)
@@ -29,7 +29,7 @@ def _setup():
     )
 
     subsys = [0, 1]
-    S2 = nkf.Renyi2EntanglementEntropy(hi, subsys)
+    S2 = Renyi2EntanglementEntropy(hi, subsys)
 
     return vs, vs_exact, S2, subsys
 

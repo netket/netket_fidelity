@@ -7,6 +7,7 @@ import flax
 import jax
 
 from RBM_Jastrow_measurement import RBMJasMeas
+from netket_fidelity.renyi2 import Renyi2EntanglementEntropy
 
 # Set the parameters
 L = 2
@@ -64,7 +65,7 @@ key_spin = jax.random.PRNGKey(seed=5678)
 
 # Instantiate the Renyi2 entropy to monitor
 subsys = [x for x in range(N // 2)]
-S2op = nkf.Renyi2EntanglementEntropy(hi, subsys)
+S2op = Renyi2EntanglementEntropy(hi, subsys)
 
 
 # Compute the probabilities for the measurement outcomes of a spin

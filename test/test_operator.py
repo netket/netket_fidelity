@@ -14,7 +14,7 @@ operators = {}
 
 operators["Rx"] = nkf.operator.Rx(hi, 1, 0.23)
 operators["Ry"] = nkf.operator.Ry(hi, 1, 0.43)
-operators["Ry"] = nkf.operator.Hadamard(hi, 0)
+operators["Hadamard"] = nkf.operator.Hadamard(hi, 0)
 
 
 @pytest.mark.parametrize(
