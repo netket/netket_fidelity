@@ -54,7 +54,7 @@ jobs:
       - name: Run tests
         run: |
           export NETKET_EXPERIMENTAL=1
-          pytest --cov=netket --cov-append test
+          pytest --cov=netket_fidelity --cov-append test
 
       - name: Run docstring tests
         if: ${{ matrix.doctest }}
