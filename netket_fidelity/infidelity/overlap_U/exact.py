@@ -3,7 +3,6 @@ import jax
 from functools import partial
 
 from netket import jax as nkjax
-from netket.utils.dispatch import TrueT
 from netket.vqs import FullSumState, expect, expect_and_grad
 from netket.utils import mpi
 from netket.stats import Stats
@@ -39,7 +38,6 @@ def infidelity(vstate: FullSumState, op: InfidelityOperatorUPsi):
 def infidelity(  # noqa: F811
     vstate: FullSumState,
     op: InfidelityOperatorUPsi,
-    use_covariance: TrueT,
     *,
     mutable,
 ):

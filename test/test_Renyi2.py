@@ -1,7 +1,6 @@
 import netket as nk
 import numpy as np
 
-import netket_fidelity as nkf
 
 from ._Renyi2_exact import _Renyi2_exact
 from netket_fidelity.renyi2 import Renyi2EntanglementEntropy

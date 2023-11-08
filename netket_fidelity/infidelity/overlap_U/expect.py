@@ -8,7 +8,6 @@ from netket import jax as nkjax
 from netket.operator import DiscreteJaxOperator
 from netket.vqs import MCState, expect, expect_and_grad, get_local_kernel_arguments
 from netket.utils import mpi
-from netket.utils.dispatch import TrueT
 
 from netket_fidelity.utils import expect_2distr
 
@@ -16,7 +15,7 @@ from .operator import InfidelityOperatorUPsi
 
 
 @expect.dispatch
-def infidelity(vstate: MCState, op: InfidelityOperatorUPsi):
+def infidelity(vstate: MCState, op: InfidelityOperatorUPsi, chunk_size: None):
     if op.hilbert != vstate.hilbert:
         raise TypeError("Hilbert spaces should match")
 
@@ -43,7 +42,7 @@ def infidelity(vstate: MCState, op: InfidelityOperatorUPsi):
 def infidelity(  # noqa: F811
     vstate: MCState,
     op: InfidelityOperatorUPsi,
-    use_covariance: TrueT,
+    chunk_size: None,
     *,
     mutable,
 ):
