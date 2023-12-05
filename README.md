@@ -61,7 +61,7 @@ psi = nk.vqs.MCState(sampler=sampler, model=model, n_samples=100)
 U = nkf.operator.Hadamard(hi, 0)
 
 # Create the driver
-optimizer = nk.optimizer.Sgd(learning_rate=0.01)
+optimizer = nk.optimizer.Adam(learning_rate=0.01)
 te =  nkf.driver.InfidelityOptimizer(phi, optimizer, U=U, U_dagger=U, variational_state=psi, is_unitary=True, cv_coeff=-1/2)
 
 # Run the driver
