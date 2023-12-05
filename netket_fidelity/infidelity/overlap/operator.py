@@ -2,15 +2,13 @@ from typing import Optional
 
 import jax.numpy as jnp
 
-import flax
 
-from netket import jax as nkjax
 from netket.operator import AbstractOperator, DiscreteJaxOperator
 from netket.utils.types import DType
 from netket.utils.numbers import is_scalar
 from netket.vqs import VariationalState, MCState, FullSumState
 
-from netket_fidelity.utils.sampling_Ustate import _logpsi_U
+from netket_fidelity.utils.sampling_Ustate import make_logpsi_U_afun
 
 
 class InfidelityOperatorStandard(AbstractOperator):
@@ -72,12 +70,12 @@ def InfidelityUPsi(
             "an instance of DiscreteJaxOperator."
         )
 
-    logpsiU = nkjax.HashablePartial(_logpsi_U, state._apply_fun)
+    logpsiU, variables_U = make_logpsi_U_afun(state._apply_fun, U, state.variables)
     target = MCState(
         sampler=state.sampler,
         apply_fun=logpsiU,
         n_samples=state.n_samples,
-        variables=flax.core.copy(state.variables, {"unitary": U}),
+        variables=variables_U,
     )
 
     return InfidelityOperatorStandard(target, cv_coeff=cv_coeff, dtype=dtype)
