@@ -60,8 +60,8 @@ te_ptvmc = nkf.driver.PTVMC(
 # Run the driver
 te_ptvmc.run()
 
-obs_mean = np.array([x.mean for x in te_ptvmc._te.obs_dict["obs"]])
-obs_error = np.array([x.error_of_mean for x in te_ptvmc._te.obs_dict["obs"]])
+obs_mean = np.array([x.mean for x in te_ptvmc._obs_dict["obs"]])
+obs_error = np.array([x.error_of_mean for x in te_ptvmc._obs_dict["obs"]])
 
 # Plot the results
 fig = plt.figure(figsize=(8, 8))
