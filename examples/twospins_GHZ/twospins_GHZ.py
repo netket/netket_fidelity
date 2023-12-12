@@ -70,7 +70,7 @@ def Trotter_Ising(phi, optimizer, psi, Uxs, Uxs_dagger, J, ts, n_iter, obs=None)
             params["theta_zz"] = (
                 params["theta_zz"]
                 .at[l, m]
-                .set(params["theta_zz"].at[l, m].get() - J * dt / 2)
+                .set(params["theta_zz"].at[l, m].get() - J * dt / 4)
             )
         psi.parameters = params
         phi.parameters = params
@@ -93,7 +93,7 @@ def Trotter_Ising(phi, optimizer, psi, Uxs, Uxs_dagger, J, ts, n_iter, obs=None)
             params["theta_zz"] = (
                 params["theta_zz"]
                 .at[l, m]
-                .set(params["theta_zz"].at[l, m].get() - J * dt / 2)
+                .set(params["theta_zz"].at[l, m].get() - J * dt / 4)
             )
         psi.parameters = params
         phi.parameters = params
