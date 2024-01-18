@@ -42,7 +42,7 @@ def _logpsi_U_fun(apply_fun, variables, x, *args):
     xp, mels = U.get_conn_padded(x)
     xp = xp.reshape(-1, x.shape[-1])
     logpsi_xp = apply_fun(variables_applyfun, xp, *args)
-    logpsi_xp = logpsi_xp.reshape(x.shape[0], -1)
+    logpsi_xp = logpsi_xp.reshape(mels.shape)
 
     return jax.scipy.special.logsumexp(logpsi_xp, axis=-1, b=mels)
 
