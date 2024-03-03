@@ -2,6 +2,7 @@ from typing import Optional
 
 import jax.numpy as jnp
 
+from netket.experimental.observable import AbstractObservable
 
 from netket.operator import AbstractOperator, DiscreteJaxOperator
 from netket.utils.types import DType
@@ -11,7 +12,7 @@ from netket.vqs import VariationalState, MCState, FullSumState
 from netket_fidelity.utils.sampling_Ustate import make_logpsi_U_afun
 
 
-class InfidelityOperatorStandard(AbstractOperator):
+class InfidelityOperatorStandard(AbstractObservable):
     def __init__(
         self,
         target: VariationalState,

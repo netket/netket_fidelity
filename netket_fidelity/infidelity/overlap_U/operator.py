@@ -1,13 +1,15 @@
 from typing import Optional
 import jax.numpy as jnp
 
+from netket.experimental.observable import AbstractObservable
+
 from netket.operator import AbstractOperator
 from netket.utils.types import DType
 from netket.utils.numbers import is_scalar
 from netket.vqs import VariationalState, FullSumState
 
 
-class InfidelityOperatorUPsi(AbstractOperator):
+class InfidelityOperatorUPsi(AbstractObservable):
     def __init__(
         self,
         U: AbstractOperator,
