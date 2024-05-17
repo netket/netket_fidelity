@@ -96,7 +96,7 @@ def projective_measurement(phi, psi, p, key_meas, key_spin):
             key_spin, subkey_spin = jax.random.split(key_spin)
 
             params = flax.core.unfreeze(psi.parameters)
-            params = jax.tree_map(lambda x: jnp.array(x), params)
+            params = jax.tree_util.tree_map(lambda x: jnp.array(x), params)
             if jax.random.uniform(subkey_spin) < prob_up.real:
                 params["orbital_down"] = params["orbital_down"].at[i].set(1e-12)
             else:
@@ -128,7 +128,7 @@ def dynamics_with_measurements(
 
         # ZZ diagonal term
         params = flax.core.unfreeze(psi.parameters)
-        params = jax.tree_map(lambda x: jnp.array(x), params)
+        params = jax.tree_util.tree_map(lambda x: jnp.array(x), params)
         for l, m in g.edges():
             params["theta_zz"] = (
                 params["theta_zz"]
@@ -154,7 +154,7 @@ def dynamics_with_measurements(
 
         # ZZ diagonal term
         params = flax.core.unfreeze(psi.parameters)
-        params = jax.tree_map(lambda x: jnp.array(x), params)
+        params = jax.tree_util.tree_map(lambda x: jnp.array(x), params)
         for l, m in g.edges():
             params["theta_zz"] = (
                 params["theta_zz"]

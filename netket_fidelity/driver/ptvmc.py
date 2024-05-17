@@ -22,7 +22,7 @@ class PTVMC:
         U_dagger=None,
         preconditioner: PreconditionerT = identity_preconditioner,
         is_unitary=False,
-        sample_Upsi=False, 
+        sample_Upsi=False,
         cv_coeff=None,
     ):
         self._dt = dt
@@ -41,7 +41,7 @@ class PTVMC:
             U_dagger=U_dagger,
             preconditioner=preconditioner,
             is_unitary=is_unitary,
-            sample_Upsi=sample_Upsi, 
+            sample_Upsi=sample_Upsi,
             cv_coeff=cv_coeff,
         )
 

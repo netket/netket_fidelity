@@ -59,7 +59,7 @@ def InfidelityOperator(
     the function :class:`netket_fidelity.infidelity.InfidelityUPsi` .
 
     This works only with the operators provdided in the package.
-    We remark that sampling from :math:`U|\phi\rangle` requires to compute connected elements of 
+    We remark that sampling from :math:`U|\phi\rangle` requires to compute connected elements of
     :math:`U` and so is more expensive than sampling from an autonomous state.
     The choice of this estimator is specified by passing  :code:`sample_Upsi=True`,
     while the flag argument :code:`is_unitary` indicates whether :math:`U` is unitary or not.
@@ -82,7 +82,7 @@ def InfidelityOperator(
     This estimator is more efficient since it does not require to sample from
     :math:`U|\phi\rangle`, but only from :math:`|\phi\rangle`.
     This choice of the estimator is the default and it works only
-    with `is_unitary==True` (besides :code:`sample_Upsi=False` ). 
+    with `is_unitary==True` (besides :code:`sample_Upsi=False` ).
     When :math:`|\Phi⟩ = |\phi⟩` the two estimators coincides.
 
     To reduce the variance of the estimator, the Control Variates (CV) method can be applied. This consists
@@ -100,8 +100,8 @@ def InfidelityOperator(
         c* = \frac{\rm{Cov}_{χ}\left[ |1-I_{loc}|^2, \rm{Re}\left[1-I_{loc}\right]\right]}{
             \rm{Var}_{χ}\left[ |1-I_{loc}|^2\right] },
 
-    where :math:`\rm{Cov}\left\cdot, \cdot\right]` indicates the covariance and :math:`\rm{Var}\left[\cdot\right]` the variance. 
-    In the relevant limit :math:`|\Psi⟩ \rightarrow|\Phi⟩`, we have :math:`c^\star \rightarrow -1/2`. The value :math:`-1/2` is 
+    where :math:`\rm{Cov}\left\cdot, \cdot\right]` indicates the covariance and :math:`\rm{Var}\left[\cdot\right]` the variance.
+    In the relevant limit :math:`|\Psi⟩ \rightarrow|\Phi⟩`, we have :math:`c^\star \rightarrow -1/2`. The value :math:`-1/2` is
     adopted as default value for c in the infidelity
     estimator. To not apply CV, set c=0.
 
@@ -110,7 +110,7 @@ def InfidelityOperator(
         U: operator :math:`\hat{U}`.
         U_dagger: dagger operator :math:`\hat{U^\dagger}`.
         cv_coeff: Control Variates coefficient c.
-        is_unitary: flag specifiying the unitarity of :math:`\hat{U}`. If True with 
+        is_unitary: flag specifiying the unitarity of :math:`\hat{U}`. If True with
             :code:`sample_Upsi=False`, the second estimator is used.
         dtype: The dtype of the output of expectation value and gradient.
         sample_Upsi: flag specifiying whether to sample from |ϕ⟩ or from U|ϕ⟩. If False with `is_unitary=False` , an error occurs.
