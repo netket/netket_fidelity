@@ -82,8 +82,8 @@ def infidelity_sampling_FullSumState(
     F, F_vjp_fun = nkjax.vjp(expect_fun, params, conjugate=True)
 
     F_grad = F_vjp_fun(jnp.ones_like(F))[0]
-    F_grad = jax.tree_map(lambda x: mpi.mpi_mean_jax(x)[0], F_grad)
-    I_grad = jax.tree_map(lambda x: -x, F_grad)
+    F_grad = jax.tree_util.tree_map(lambda x: mpi.mpi_mean_jax(x)[0], F_grad)
+    I_grad = jax.tree_util.tree_map(lambda x: -x, F_grad)
     I_stats = Stats(mean=1 - F, error_of_mean=0.0, variance=0.0)
 
     return I_stats, I_grad

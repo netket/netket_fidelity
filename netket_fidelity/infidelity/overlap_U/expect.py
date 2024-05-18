@@ -9,7 +9,6 @@ from netket.operator import DiscreteJaxOperator
 from netket.vqs import MCState, expect, expect_and_grad, get_local_kernel_arguments
 from netket.utils import mpi
 
-from netket_fidelity.utils import expect_2distr
 
 from .operator import InfidelityOperatorUPsi
 
@@ -113,7 +112,10 @@ def infidelity_sampling_MCState(
     xp_t_ravel = jnp.vstack(xp_t_splitted)
 
     def expect_kernel(params):
-        def kernel_fun(params, params_t, σ, σ_t):
+        def kernel_fun(params_all, samples_all):
+            params, params_t = params_all
+            σ, σ_t = samples_all
+
             W = {"params": params, **model_state}
             W_t = {"params": params_t, **model_state_t}
 
@@ -139,14 +141,24 @@ def infidelity_sampling_MCState(
             lambda params, σ: 2 * afun_t({"params": params, **model_state_t}, σ).real
         )
 
-        return expect_2distr(
-            log_pdf,
-            log_pdf_t,
+        def log_pdf_joint(params_all, samples_all):
+            params, params_t = params_all
+            σ, σ_t = samples_all
+            log_pdf_vals = log_pdf(params, σ)
+            log_pdf_t_vals = log_pdf_t(params_t, σ_t)
+            return log_pdf_vals + log_pdf_t_vals
+
+        return nkjax.expect(
+            log_pdf_joint,
             kernel_fun,
-            params,
-            params_t,
-            σ,
-            σ_t,
+            (
+                params,
+                params_t,
+            ),
+            (
+                σ,
+                σ_t,
+            ),
             n_chains=n_chains_t,
         )
 
