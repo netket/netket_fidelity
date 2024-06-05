@@ -88,28 +88,14 @@ def infidelity_sampling_MCState(
     σ = sigma.reshape(-1, N)
     σ_t = sigma_t.reshape(-1, N)
 
-    n_samples = σ.shape[0]
-
     if isinstance(args, DiscreteJaxOperator):
         xp, mels = args.get_conn_padded(σ)
         xp_t, mels_t = args_t.get_conn_padded(σ_t)
-
-        n_xp = args.max_conn_size
-        n_xp_t = args_t.max_conn_size
     else:
         xp = args[0].reshape(σ.shape[0], -1, N)
         mels = args[1].reshape(σ.shape[0], -1)
         xp_t = args_t[0].reshape(σ_t.shape[0], -1, N)
         mels_t = args_t[1].reshape(σ_t.shape[0], -1)
-
-        n_xp = args[0].shape[-2]
-        n_xp_t = args_t[0].shape[-2]
-
-    xp_splitted = [c.reshape(n_samples, N) for c in jnp.split(xp, n_xp, axis=-2)]
-    xp_ravel = jnp.vstack(xp_splitted)
-
-    xp_t_splitted = [c.reshape(n_samples, N) for c in jnp.split(xp_t, n_xp_t, axis=-2)]
-    xp_t_ravel = jnp.vstack(xp_t_splitted)
 
     def expect_kernel(params):
         def kernel_fun(params_all, samples_all):
@@ -119,11 +105,8 @@ def infidelity_sampling_MCState(
             W = {"params": params, **model_state}
             W_t = {"params": params_t, **model_state_t}
 
-            logpsi_t_xp = jnp.split(afun_t(W_t, xp_ravel), n_xp, axis=0)
-            logpsi_t_xp = jnp.stack(logpsi_t_xp, axis=1)
-
-            logpsi_xp_t = jnp.split(afun(W, xp_t_ravel), n_xp_t, axis=0)
-            logpsi_xp_t = jnp.stack(logpsi_xp_t, axis=1)
+            logpsi_t_xp = afun_t(W_t, xp)
+            logpsi_xp_t = afun(W, xp_t)
 
             log_val = (
                 logsumexp(logpsi_t_xp, axis=-1, b=mels)
