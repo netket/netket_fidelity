@@ -156,6 +156,7 @@ class InfidelityOptimizer(AbstractVariationalDriver):
         *args,
         target_infidelity=None,
         callback=lambda *x: True,
+        show_progress=True, 
         **kwargs,
     ):
         """
@@ -184,7 +185,7 @@ class InfidelityOptimizer(AbstractVariationalDriver):
             )
             callbacks = callbacks + (cb,)
 
-        super().run(n_iter, out, *args, callback=callbacks, **kwargs)
+        super().run(n_iter, out, *args, show_progress=show_progress, callback=callbacks, **kwargs)
 
     @property
     def cv(self) -> Optional[float]:
